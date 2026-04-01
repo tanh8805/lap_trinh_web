@@ -1,0 +1,8 @@
+com\example\shopweb\model\User.class
+com\example\shopweb\utils\DBConnection.class
+com\example\shopweb\controller\LogoutServlet.class
+com\example\shopweb\resources\JakartaEE8Resource.class
+com\example\shopweb\JakartaRestConfiguration.class
+com\example\shopweb\controller\RegisterServlet.class
+com\example\shopweb\controller\LoginServlet.class
+com\example\shopweb\dao\UserDAO.class
