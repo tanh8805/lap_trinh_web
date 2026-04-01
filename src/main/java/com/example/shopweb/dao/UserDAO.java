@@ -45,7 +45,7 @@ public class UserDAO {
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, user.getUsername());
-            ps.setString(2, user.getPassword()); // plain text, không hash
+            ps.setString(2, user.getPassword()); 
             ps.setString(3, user.getEmail());
             ps.setString(4, "USER");
 
