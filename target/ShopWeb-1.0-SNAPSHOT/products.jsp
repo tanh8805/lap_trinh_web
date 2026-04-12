@@ -396,7 +396,11 @@
                     <% if (!sizesAttr.isEmpty()) { %>
                         <p class="product-sizes">Size: <%= sizesAttr %></p>
                     <% } %>
+<<<<<<< HEAD
                     <a href="#" class="btn-view">Xem chi tiết</a>
+=======
+                    <a href="products/detail?id=<%= p.getId() %>" class="btn-view">Xem chi tiết</a>
+>>>>>>> origin/feature-add-to-cart-button
                 </div>
             </div>
             <%
@@ -483,6 +487,10 @@
         noResult.style.display = visibleCount === 0 ? 'block' : 'none';
     }
 
+<<<<<<< HEAD
+=======
+    // Xóa toàn bộ bộ lọc
+>>>>>>> origin/feature-add-to-cart-button
     btnReset.addEventListener('click', () => {
         searchInput.value    = '';
         categoryFilter.value = '';
@@ -493,6 +501,10 @@
         applyFilter();
     });
 
+<<<<<<< HEAD
+=======
+    // ===== Đọc query param ?category=... từ URL để pre-filter khi vào từ trang chủ =====
+>>>>>>> origin/feature-add-to-cart-button
     (function() {
         var params = new URLSearchParams(window.location.search);
         var cat = params.get('category');
@@ -500,9 +512,17 @@
             // Pre-fill dropdown đúng với category được chọn
             categoryFilter.value = cat;
         }
+<<<<<<< HEAD
         applyFilter();
     })();
 
+=======
+        // Luôn chạy applyFilter dù có param hay không
+        applyFilter();
+    })();
+
+    // ===== Cập nhật badge giỏ hàng từ localStorage =====
+>>>>>>> origin/feature-add-to-cart-button
     function updateCartBadge() {
         var badge = document.getElementById('cartBadge');
         try {
