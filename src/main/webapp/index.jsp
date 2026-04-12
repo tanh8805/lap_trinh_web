@@ -208,34 +208,25 @@
 </footer>
 
 <script>
-    // ===== Đọc số lượng sản phẩm trong giỏ từ localStorage và cập nhật badge =====
-    // Giỏ hàng lưu dạng mảng JSON: [{ variantId, name, size, price, quantity }, ...]
+    // ===== Đọc số lượng sản phẩm trong giỏ từ server session =====
     function updateCartBadge() {
-        var badge = document.getElementById('cartBadge');
-        try {
-            var cart = JSON.parse(localStorage.getItem('shopweb_cart') || '[]');
-            // Tổng số lượng = cộng quantity của tất cả item
-            var totalQty = cart.reduce(function(sum, item) {
-                return sum + (parseInt(item.quantity) || 0);
-            }, 0);
-
-            if (totalQty > 0) {
-                badge.textContent = totalQty > 99 ? '99+' : totalQty;
-                badge.style.display = 'flex';
-            } else {
-                badge.style.display = 'none';
-            }
-        } catch (e) {
-            badge.style.display = 'none';
-        }
+        fetch('<%= request.getContextPath() %>/cart?action=count')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var badge = document.getElementById('cartBadge');
+                if (data.count > 0) {
+                    badge.textContent = data.count > 99 ? '99+' : data.count;
+                    badge.style.display = 'flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+            })
+            .catch(function() {
+                document.getElementById('cartBadge').style.display = 'none';
+            });
     }
 
-    // Chạy ngay khi tải trang
     updateCartBadge();
-
-    // Lắng nghe sự kiện storage để badge cập nhật realtime
-    // khi tab khác thay đổi giỏ hàng
-    window.addEventListener('storage', updateCartBadge);
 </script>
 
 </body>

@@ -1,0 +1,93 @@
+==============================================================
+  MODIFY.TXT — Danh sách file thay đổi (bản cuối cùng)
+  Dự án: ShopWeb — Tính năng Giỏ hàng
+==============================================================
+
+--------------------------------------------------------------
+[TẠO MỚI] src/main/java/com/example/shopweb/model/CartItem.java
+--------------------------------------------------------------
+  Class mới, implements Serializable
+  Fields: variantId, productId, name, imageUrl, size, price, quantity
+  Method: getSubtotal() = price * quantity
+
+--------------------------------------------------------------
+[TẠO MỚI] src/main/java/com/example/shopweb/dao/CartDAO.java
+--------------------------------------------------------------
+  getVariantsByProductId(int productId)
+    → Lấy danh sách variant còn hàng, dùng cho popup chọn/đổi size
+  getCartItemByVariantId(int variantId)
+    → Lấy 1 variant cụ thể khi user confirm thêm vào giỏ
+
+--------------------------------------------------------------
+[TẠO MỚI] src/main/java/com/example/shopweb/dao/OrderDAO.java
+--------------------------------------------------------------
+  createOrder(userId, items, totalAmount, address)
+    → Dùng JDBC Transaction: INSERT orders → INSERT order_items
+    → Thử INSERT với cột variant_id trước
+    → Nếu DB chưa có cột variant_id thì fallback sang product_id
+    → price lưu cứng tại thời điểm mua, không join lại DB
+
+--------------------------------------------------------------
+[TẠO MỚI] src/main/java/com/example/shopweb/controller/CartServlet.java
+--------------------------------------------------------------
+  @WebServlet("/cart")
+
+  GET /cart
+    → Hiển thị trang giỏ hàng (forward cart.jsp)
+  GET /cart?action=variants&productId=X
+    → Trả JSON danh sách size còn hàng cho popup
+
+  POST /cart action=add
+    → Nhận variantId, thêm vào Session cart
+    → Nếu AJAX (fetch): trả JSON {"status":"ok"}
+    → Nếu form thường: redirect /products?added=true
+  POST /cart action=update
+    → Nhận variantId + delta, tăng/giảm số lượng
+  POST /cart action=remove
+    → Nhận variantId, xóa khỏi Session cart
+  POST /cart action=changeSize
+    → Nhận oldVariantId + newVariantId
+    → Lấy quantity của variant cũ, xóa variant cũ
+    → Thêm variant mới với quantity giữ nguyên
+  POST /cart action=checkout
+    → Nhận selectedIds (danh sách variantId được check)
+    → Tách giỏ: selectedItems → lưu DB, remainingItems → giữ lại Session
+    → CHỈ xóa sản phẩm đã thanh toán, không xóa cả giỏ
+
+--------------------------------------------------------------
+[VIẾT LẠI] src/main/webapp/cart.jsp
+--------------------------------------------------------------
+  Server-side render từ Session (không dùng localStorage)
+  Bảng sản phẩm có các cột: checkbox | sản phẩm | size | số lượng | thành tiền | xóa
+  Cột Size: button bấm được → mở popup đổi size
+  Checkbox từng sản phẩm + "Chọn tất cả"
+  Tóm tắt đơn hàng cập nhật realtime theo checkbox
+  Voucher xử lý client-side (hardcode 4 mã mẫu)
+  Nút Thanh toán: disabled khi chưa chọn gì
+
+  Logic sessionStorage giữ trạng thái checkbox qua reload:
+    - Bấm +/-: lưu variantId ĐƯỢC check → khôi phục sau reload
+    - Bấm Thanh toán: lưu variantId KHÔNG check → khôi phục sau redirect
+    - Đổi size: giữ nguyên trạng thái checked/unchecked của item đó
+
+  Popup đổi size:
+    - Gọi GET /cart?action=variants để lấy danh sách size
+    - Highlight size hiện tại
+    - Confirm → fetch POST action=changeSize → reload trang
+
+--------------------------------------------------------------
+[THAY ĐỔI] src/main/webapp/products.jsp
+--------------------------------------------------------------
+  Nút "Thêm vào giỏ" dùng fetch AJAX, không reload trang
+  Mở popup chọn size trước khi thêm
+  Sau khi thêm: badge tăng +1, hiện toast góc phải dưới 3 giây
+  Badge giỏ hàng render server-side từ Session (bỏ localStorage)
+
+--------------------------------------------------------------
+[THAY ĐỔI] src/main/java/com/example/shopweb/JakartaRestConfiguration.java
+--------------------------------------------------------------
+  Đổi @ApplicationPath("/") → @ApplicationPath("/api")
+  Lý do: ApplicationPath "/" làm JAX-RS chặn toàn bộ request,
+          khiến /cart trả về {"status":"ok"} thay vì trang JSP
+
+--------------------------------------------------------------

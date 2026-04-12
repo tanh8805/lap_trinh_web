@@ -1,13 +1,15 @@
 package com.example.shopweb;
-
+ 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
-
+ 
 /**
- * Configures Jakarta RESTful Web Services for the application.
- * @author Juneau
+ * Cấu hình JAX-RS REST base path.
+ * QUAN TRỌNG: Phải dùng "/api" thay vì "/" hoặc ""
+ * Nếu để "/" thì JAX-RS sẽ chặn toàn bộ request, bao gồm cả /cart, /products...
+ * → Kết quả: trình duyệt thấy {"status":"ok"} thay vì trang JSP
  */
-@ApplicationPath("resources")
+@ApplicationPath("/api")
 public class JakartaRestConfiguration extends Application {
-    
 }
+ 

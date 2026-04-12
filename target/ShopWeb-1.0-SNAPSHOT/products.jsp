@@ -212,6 +212,32 @@
         .product-card.hidden { display: none; }
 
         .product-image { width: 100%; height: 280px; object-fit: cover; background-color: #eee; }
+
+        /* ===== TOAST THONG BAO THEM GIO HANG ===== */
+        #cartToast {
+            position: fixed; bottom: 28px; right: 28px;
+            background: #111; color: #fff;
+            padding: 13px 20px; border-radius: 8px;
+            font-size: 14px; font-weight: 500;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.22);
+            display: none; align-items: center; gap: 12px;
+            z-index: 999; min-width: 260px;
+            animation: slideUp 0.25s ease;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(16px); opacity: 0; }
+            to   { transform: translateY(0);    opacity: 1; }
+        }
+        #cartToast a {
+            color: #adf; text-decoration: none; font-weight: 700;
+            white-space: nowrap;
+        }
+        #cartToast a:hover { text-decoration: underline; }
+
+        /* Trang thai loading cua nut khi dang fetch */
+        .btn-add-cart.loading {
+            opacity: 0.6; cursor: not-allowed; pointer-events: none;
+        }
         .product-info { padding: 18px; text-align: center; flex: 1; display: flex; flex-direction: column; }
         .product-name { font-size: 16px; margin-bottom: 8px; color: #222; }
         .product-category { font-size: 12px; color: #999; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -265,15 +291,30 @@
             <a href="register.jsp">Đăng ký</a>
         <% } %>
 
-        <%-- Icon giỏ hàng --%>
-        <a href="cart.jsp" class="cart-link" title="Giỏ hàng">
+        <%-- Icon giỏ hàng — link qua Servlet thay vì cart.jsp trực tiếp --%>
+        <a href="<%= request.getContextPath() %>/cart" class="cart-link" title="Giỏ hàng">
             🛒
-            <span class="cart-badge" id="cartBadge">0</span>
+            <%-- Badge đếm số sản phẩm từ Session --%>
+            <%
+                java.util.List<?> _cart = (java.util.List<?>) session.getAttribute("cart");
+                int _cartSize = (_cart != null) ? _cart.size() : 0;
+            %>
+            <% if (_cartSize > 0) { %>
+                <span class="cart-badge" id="cartBadge" style="display:flex;"><%= _cartSize > 99 ? "99+" : _cartSize %></span>
+            <% } else { %>
+                <span class="cart-badge" id="cartBadge" style="display:none;">0</span>
+            <% } %>
         </a>
     </div>
 </nav>
 
-<div class="page-wrapper">
+<%-- Banner thông báo khi vừa thêm sản phẩm vào giỏ thành công --%>
+<% if ("true".equals(request.getParameter("added"))) { %>
+    <div style="background:#d4edda; color:#155724; padding:12px 50px; font-size:14px; font-weight:500; border-bottom:1px solid #c3e6cb;">
+        ✅ Đã thêm sản phẩm vào giỏ hàng!
+        <a href="<%= request.getContextPath() %>/cart" style="color:#155724; font-weight:700; margin-left:12px;">Xem giỏ hàng →</a>
+    </div>
+<% } %>
 
     <%-- ===== SIDEBAR BỘ LỌC ===== --%>
     <aside class="filter-sidebar">
@@ -396,7 +437,13 @@
                     <% if (!sizesAttr.isEmpty()) { %>
                         <p class="product-sizes">Size: <%= sizesAttr %></p>
                     <% } %>
-                    <a href="#" class="btn-view">Xem chi tiết</a>
+                    <%-- Nút mở popup chọn size — data-product-id để JS gọi API lấy variants --%>
+                    <button class="btn-view btn-add-cart"
+                            data-product-id="<%= p.getId() %>"
+                            data-product-name="<%= p.getName() %>"
+                            style="margin-top:auto; cursor:pointer; border:none; width:100%;">
+                        + Thêm vào giỏ
+                    </button>
                 </div>
             </div>
             <%
@@ -409,7 +456,32 @@
 
 </div>
 
+<%-- ===== POPUP CHỌN SIZE ===== --%>
+<div id="sizeModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:500; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:14px; padding:28px 28px 24px; max-width:380px; width:90%; position:relative; box-shadow:0 8px 32px rgba(0,0,0,0.18);">
+        <button id="btnCloseModal" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:#aaa;">&#10005;</button>
+        <h3 id="modalProductName" style="font-size:17px;font-weight:700;color:#111;margin-bottom:18px;padding-right:24px;"></h3>
+
+        <p style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">Chọn size</p>
+        <div id="modalSizeList" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;"></div>
+
+        <div id="modalLoading" style="display:none;text-align:center;color:#999;font-size:14px;padding:16px 0;">Đang tải...</div>
+        <div id="modalError"   style="display:none;color:#e74c3c;font-size:13px;margin-bottom:10px;"></div>
+
+        <button id="btnConfirmAdd" disabled
+                style="width:100%;padding:13px;background:#000;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;transition:background 0.2s;opacity:0.4;">
+            + Thêm vào giỏ
+        </button>
+    </div>
+</div>
+
 <footer>© 2026 ShopWeb. All rights reserved.</footer>
+
+<%-- Toast thong bao them gio hang thanh cong --%>
+<div id="cartToast">
+    <span id="toastMsg">✅ Đã thêm vào giỏ hàng!</span>
+    <a href="<%= request.getContextPath() %>/cart">Xem giỏ →</a>
+</div>
 
 <script>
     // ===== BỘ LỌC CLIENT-SIDE =====
@@ -506,27 +578,159 @@
         applyFilter();
     })();
 
-    // ===== Cập nhật badge giỏ hàng từ localStorage =====
-    function updateCartBadge() {
-        var badge = document.getElementById('cartBadge');
-        try {
-            var cart = JSON.parse(localStorage.getItem('shopweb_cart') || '[]');
-            var totalQty = cart.reduce(function(sum, item) {
-                return sum + (parseInt(item.quantity) || 0);
-            }, 0);
-            if (totalQty > 0) {
-                badge.textContent = totalQty > 99 ? '99+' : totalQty;
-                badge.style.display = 'flex';
-            } else {
-                badge.style.display = 'none';
-            }
-        } catch (e) {
-            badge.style.display = 'none';
-        }
+    // Badge giỏ hàng duoc cap nhat bang JS sau khi fetch thanh cong
+
+    // ===== POPUP CHON SIZE + AJAX THEM GIO HANG =====
+    var cartUrl   = '<%= request.getContextPath() %>/cart';
+    var toastTimer = null;
+    var selectedVariantId = null;
+    var activeAddBtn      = null;
+
+    // Mo popup khi bam "Them vao gio"
+    document.querySelectorAll('.btn-add-cart').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var productId   = btn.dataset.productId;
+            var productName = btn.dataset.productName || 'San pham';
+            activeAddBtn = btn;
+            selectedVariantId = null;
+
+            // Reset popup
+            document.getElementById('modalProductName').textContent = productName;
+            document.getElementById('modalSizeList').innerHTML = '';
+            document.getElementById('modalError').style.display   = 'none';
+            document.getElementById('modalLoading').style.display = 'block';
+            document.getElementById('btnConfirmAdd').disabled = true;
+            document.getElementById('btnConfirmAdd').style.opacity = '0.4';
+
+            // Hien popup
+            var modal = document.getElementById('sizeModal');
+            modal.style.display = 'flex';
+
+            // Goi API lay danh sach variants (size) cua san pham nay
+            fetch(cartUrl + '?action=variants&productId=' + productId, {
+                credentials: 'same-origin'
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                document.getElementById('modalLoading').style.display = 'none';
+                if (!data.variants || data.variants.length === 0) {
+                    document.getElementById('modalError').textContent = 'San pham nay hien het hang.';
+                    document.getElementById('modalError').style.display = 'block';
+                    return;
+                }
+                renderSizeButtons(data.variants);
+            })
+            .catch(function() {
+                document.getElementById('modalLoading').style.display = 'none';
+                document.getElementById('modalError').textContent = 'Khong the tai thong tin san pham.';
+                document.getElementById('modalError').style.display = 'block';
+            });
+        });
+    });
+
+    // Render cac nut size trong popup
+    function renderSizeButtons(variants) {
+        var container = document.getElementById('modalSizeList');
+        container.innerHTML = '';
+        variants.forEach(function(v) {
+            var btn = document.createElement('button');
+            btn.textContent = v.size;
+            btn.title = formatVND(v.price);
+            btn.style.cssText = 'padding:8px 16px;border:1.5px solid #ddd;border-radius:6px;' +
+                                'font-size:14px;cursor:pointer;background:#fff;transition:all 0.15s;font-weight:600;';
+            btn.addEventListener('click', function() {
+                // Deselect tat ca, chon cai nay
+                container.querySelectorAll('button').forEach(function(b) {
+                    b.style.background    = '#fff';
+                    b.style.color         = '#333';
+                    b.style.borderColor   = '#ddd';
+                });
+                btn.style.background  = '#000';
+                btn.style.color       = '#fff';
+                btn.style.borderColor = '#000';
+
+                selectedVariantId = v.variantId;
+                document.getElementById('btnConfirmAdd').disabled = false;
+                document.getElementById('btnConfirmAdd').style.opacity = '1';
+            });
+            container.appendChild(btn);
+        });
     }
 
-    updateCartBadge();
-    window.addEventListener('storage', updateCartBadge);
+    // Dong popup
+    document.getElementById('btnCloseModal').addEventListener('click', closeModal);
+    document.getElementById('sizeModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+    function closeModal() {
+        document.getElementById('sizeModal').style.display = 'none';
+        selectedVariantId = null;
+    }
+
+    // Confirm them vao gio voi variant da chon
+    document.getElementById('btnConfirmAdd').addEventListener('click', function() {
+        if (!selectedVariantId) return;
+
+        var confirmBtn = this;
+        confirmBtn.textContent = 'Dang them...';
+        confirmBtn.disabled = true;
+
+        fetch(cartUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'action=add&variantId=' + selectedVariantId,
+            credentials: 'same-origin'
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            confirmBtn.textContent = 'Them vao gio';
+            confirmBtn.disabled = false;
+            confirmBtn.style.opacity = '1';
+
+            if (data.status === 'ok') {
+                closeModal();
+                updateBadge(1);
+                showToast();
+                if (activeAddBtn) {
+                    activeAddBtn.textContent = 'Da them!';
+                    activeAddBtn.style.background = '#27ae60';
+                    setTimeout(function() {
+                        activeAddBtn.textContent = '+ Them vao gio';
+                        activeAddBtn.style.background = '';
+                    }, 2000);
+                }
+            } else {
+                document.getElementById('modalError').textContent =
+                    data.message || 'Co loi xay ra. Vui long thu lai.';
+                document.getElementById('modalError').style.display = 'block';
+            }
+        })
+        .catch(function() {
+            confirmBtn.textContent = 'Them vao gio';
+            confirmBtn.disabled = false;
+            document.getElementById('modalError').textContent = 'Khong the ket noi server.';
+            document.getElementById('modalError').style.display = 'block';
+        });
+    });
+
+    function formatVND(n) { return Math.round(n).toLocaleString('vi-VN') + ' d'; }
+
+    function updateBadge(delta) {
+        var badge = document.getElementById('cartBadge');
+        if (!badge) return;
+        var current = parseInt(badge.textContent) || 0;
+        var next = current + delta;
+        badge.textContent = next > 99 ? '99+' : next;
+        badge.style.display = 'flex';
+    }
+
+    function showToast() {
+        var toast = document.getElementById('cartToast');
+        if (!toast) return;
+        toast.style.display = 'flex';
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(function() { toast.style.display = 'none'; }, 3000);
+    }
 </script>
 
 </body>
