@@ -1,8 +1,10 @@
 package com.example.shopweb.model;
 
 import java.util.List;
+import java.util.Map;
 
 public class Product {
+
     private int id;
     private String name;
     private String description;
@@ -11,30 +13,80 @@ public class Product {
     private double displayPrice; // Giá hiển thị (thấp nhất từ các variant)
     private String categoryName; // Tên danh mục để hiển thị và lọc client-side
     private List<String> sizes;  // Danh sách size còn hàng để lọc client-side
+    private Map<String, Double> variantPrices;
 
-    public Product() {}
+    public Product() {
+    }
 
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public int getId() {
+        return id;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public void setId(int id) {
+        this.id = id;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public String getName() {
+        return name;
+    }
 
-    public String getImageUrl() { return imageUrl; }
-    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public int getCategoryId() { return categoryId; }
-    public void setCategoryId(int categoryId) { this.categoryId = categoryId; }
+    public String getDescription() {
+        return description;
+    }
 
-    public double getDisplayPrice() { return displayPrice; }
-    public void setDisplayPrice(double displayPrice) { this.displayPrice = displayPrice; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-    public String getCategoryName() { return categoryName; }
-    public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
+    public String getImageUrl() {
+        return imageUrl;
+    }
 
-    public List<String> getSizes() { return sizes; }
-    public void setSizes(List<String> sizes) { this.sizes = sizes; }
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public int getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(int categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public double getDisplayPrice() {
+        return displayPrice;
+    }
+
+    public void setDisplayPrice(double displayPrice) {
+        this.displayPrice = displayPrice;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    public List<String> getSizes() {
+        return sizes;
+    }
+
+    public void setSizes(List<String> sizes) {
+        this.sizes = sizes;
+    }
+
+    public Map<String, Double> getVariantPrices() {
+        return variantPrices;
+    }
+
+    public void setVariantPrices(Map<String, Double> variantPrices) {
+        this.variantPrices = variantPrices;
+    }
 }

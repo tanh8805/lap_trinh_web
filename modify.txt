@@ -1,93 +1,20 @@
-==============================================================
-  MODIFY.TXT — Danh sách file thay đổi (bản cuối cùng)
-  Dự án: ShopWeb — Tính năng Giỏ hàng
-==============================================================
+-File products.jsp:
+	1. CSS (dòng 239–412) — thêm mới: .btn-row, .btn-open-modal (dòng 239–270); toàn bộ #cartModal, .modal-* (dòng 272–375); #toast, #toast-close (dòng 377–412).	
+	2.HTML card (dòng 574–608) — thay nút <a class="btn-view">Xem chi tiết</a> đơn lẻ bằng .btn-row chứa 2 nút; nút 🛒 dùng data-* attribute (data-product-id, data-product-name, data-product-price, data-product-image, data-product-sizes, data-variant-prices) thay vì onclick inline để tránh lỗi ký tự đặc biệt.
+	3.HTML body (dòng 622–651) — thêm HTML modal #cartModal sau </footer> (dòng 622–645) và toast #toast có nút X (dòng 647–651).
+	4.Script (dòng 747–898):
+		Dòng 747–759: thay updateCartBadge() cũ dùng localStorage bằng hàm nhận count từ server; khởi tạo badge từ session.getAttribute("cartCount").
+		Dòng 761–813: thêm _modal object + addEventListener cho tất cả .btn-open-modal — đọc data-*, parse variantPrices từ JSON, render size buttons, hiện modal.
+		Dòng 815–818: closeCartModal().
+		Dòng 820–836: selectModalSize() — đổi giá theo size từ _modal.variantPrices, dùng Math.round().toLocaleString('vi-VN').
+		Dòng 838–870: confirmAddToCart() — fetch POST /cart?action=add chỉ gửi productId, cập nhật badge từ data.cartCount.
+		Dòng 872–888: showToast() / closeToast() — tự ẩn sau 3 giây hoặc bấm X.
+		Dòng 890–898: ESC listener — đóng modal nếu đang mở, đóng toast nếu không.
 
---------------------------------------------------------------
-[TẠO MỚI] src/main/java/com/example/shopweb/model/CartItem.java
---------------------------------------------------------------
-  Class mới, implements Serializable
-  Fields: variantId, productId, name, imageUrl, size, price, quantity
-  Method: getSubtotal() = price * quantity
-
---------------------------------------------------------------
-[TẠO MỚI] src/main/java/com/example/shopweb/dao/CartDAO.java
---------------------------------------------------------------
-  getVariantsByProductId(int productId)
-    → Lấy danh sách variant còn hàng, dùng cho popup chọn/đổi size
-  getCartItemByVariantId(int variantId)
-    → Lấy 1 variant cụ thể khi user confirm thêm vào giỏ
-
---------------------------------------------------------------
-[TẠO MỚI] src/main/java/com/example/shopweb/dao/OrderDAO.java
---------------------------------------------------------------
-  createOrder(userId, items, totalAmount, address)
-    → Dùng JDBC Transaction: INSERT orders → INSERT order_items
-    → Thử INSERT với cột variant_id trước
-    → Nếu DB chưa có cột variant_id thì fallback sang product_id
-    → price lưu cứng tại thời điểm mua, không join lại DB
-
---------------------------------------------------------------
-[TẠO MỚI] src/main/java/com/example/shopweb/controller/CartServlet.java
---------------------------------------------------------------
-  @WebServlet("/cart")
-
-  GET /cart
-    → Hiển thị trang giỏ hàng (forward cart.jsp)
-  GET /cart?action=variants&productId=X
-    → Trả JSON danh sách size còn hàng cho popup
-
-  POST /cart action=add
-    → Nhận variantId, thêm vào Session cart
-    → Nếu AJAX (fetch): trả JSON {"status":"ok"}
-    → Nếu form thường: redirect /products?added=true
-  POST /cart action=update
-    → Nhận variantId + delta, tăng/giảm số lượng
-  POST /cart action=remove
-    → Nhận variantId, xóa khỏi Session cart
-  POST /cart action=changeSize
-    → Nhận oldVariantId + newVariantId
-    → Lấy quantity của variant cũ, xóa variant cũ
-    → Thêm variant mới với quantity giữ nguyên
-  POST /cart action=checkout
-    → Nhận selectedIds (danh sách variantId được check)
-    → Tách giỏ: selectedItems → lưu DB, remainingItems → giữ lại Session
-    → CHỈ xóa sản phẩm đã thanh toán, không xóa cả giỏ
-
---------------------------------------------------------------
-[VIẾT LẠI] src/main/webapp/cart.jsp
---------------------------------------------------------------
-  Server-side render từ Session (không dùng localStorage)
-  Bảng sản phẩm có các cột: checkbox | sản phẩm | size | số lượng | thành tiền | xóa
-  Cột Size: button bấm được → mở popup đổi size
-  Checkbox từng sản phẩm + "Chọn tất cả"
-  Tóm tắt đơn hàng cập nhật realtime theo checkbox
-  Voucher xử lý client-side (hardcode 4 mã mẫu)
-  Nút Thanh toán: disabled khi chưa chọn gì
-
-  Logic sessionStorage giữ trạng thái checkbox qua reload:
-    - Bấm +/-: lưu variantId ĐƯỢC check → khôi phục sau reload
-    - Bấm Thanh toán: lưu variantId KHÔNG check → khôi phục sau redirect
-    - Đổi size: giữ nguyên trạng thái checked/unchecked của item đó
-
-  Popup đổi size:
-    - Gọi GET /cart?action=variants để lấy danh sách size
-    - Highlight size hiện tại
-    - Confirm → fetch POST action=changeSize → reload trang
-
---------------------------------------------------------------
-[THAY ĐỔI] src/main/webapp/products.jsp
---------------------------------------------------------------
-  Nút "Thêm vào giỏ" dùng fetch AJAX, không reload trang
-  Mở popup chọn size trước khi thêm
-  Sau khi thêm: badge tăng +1, hiện toast góc phải dưới 3 giây
-  Badge giỏ hàng render server-side từ Session (bỏ localStorage)
-
---------------------------------------------------------------
-[THAY ĐỔI] src/main/java/com/example/shopweb/JakartaRestConfiguration.java
---------------------------------------------------------------
-  Đổi @ApplicationPath("/") → @ApplicationPath("/api")
-  Lý do: ApplicationPath "/" làm JAX-RS chặn toàn bộ request,
-          khiến /cart trả về {"status":"ok"} thay vì trang JSP
-
---------------------------------------------------------------
+-File Product.java:
+	1.Thêm field private Map<String, Double> variantPrices
+	2.Thêm getVariantPrices() / setVariantPrices()
+-File ProductDAO.java:
+	1.Trong getAllProducts() — thêm vòng lặp gọi getVariantPrices() cho từng product sau khi điền sizes(dòng 71–73).
+	2.Thêm method getProductById(int id) (dòng 76–101) — query 1 sản phẩm theo ID, gọi getVariantPrices()
+	3.Thêm method private getVariantPrices(int productId) (dòng 108–124) — query product_variants WHERE product_id = ? AND stock_quantity > 0, trả về Map<String, Double>, dùng PreparedStatement + try-with-resources.

@@ -4,12 +4,8 @@ com\example\shopweb\JakartaRestConfiguration.class
 com\example\shopweb\model\Product.class
 com\example\shopweb\controller\RegisterServlet.class
 com\example\shopweb\model\User.class
-com\example\shopweb\model\CartItem.class
 com\example\shopweb\utils\DBConnection.class
 com\example\shopweb\controller\LogoutServlet.class
 com\example\shopweb\controller\ProductServlet.class
-com\example\shopweb\dao\OrderDAO.class
-com\example\shopweb\controller\CartServlet.class
-com\example\shopweb\dao\CartDAO.class
 com\example\shopweb\controller\LoginServlet.class
 com\example\shopweb\dao\UserDAO.class
