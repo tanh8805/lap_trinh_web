@@ -147,7 +147,7 @@
 
         <%-- Icon giỏ hàng — active vì đang ở trang này --%>
         <a href="cart.jsp" class="cart-link" title="Giỏ hàng">
-            Giỏ hàng🛒
+            🛒
             <span class="cart-badge" id="cartBadge">0</span>
         </a>
     </div>
