@@ -118,6 +118,7 @@
     <a href="<%= contextPath %>/index.jsp" class="logo">ShopWeb</a>
     <div class="menu">
         <a href="<%= contextPath %>/products">Sản phẩm</a>
+        <a href="contact.jsp">Liên Hệ</a>
         <% if (session.getAttribute("loggedInUser") != null) { %>
             <a href="<%= contextPath %>/logout">Đăng xuất</a>
         <% } else { %>
@@ -277,12 +278,34 @@
     }
 
     function buyNow() {
-        if (!selectedSize) {
-            alert('Vui lòng chọn size!');
-            return;
-        }
-        alert('Tính năng mua ngay sẽ được phát triển!');
+    if (!selectedSize) {
+        alert('Vui lòng chọn size!');
+        return;
     }
+
+    var selectedVariantId = variantIdBySize[selectedSize];
+    var quantity = document.getElementById('quantity').value;
+
+    fetch('<%= contextPath %>/cart?action=add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'variantId=' + selectedVariantId + '&quantity=' + quantity
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log("Response:", data); // 👈 debug cực quan trọng
+
+        if (data.success === true || data.status === 'ok') {
+            window.location.href = '<%= contextPath %>/checkout.jsp';
+        } else {
+            alert('Server trả về lỗi: ' + (data.message || 'Không xác định'));
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Không kết nối được server');
+    });
+}
 
     // ===== TOAST =====
     var toastTimer = null;
