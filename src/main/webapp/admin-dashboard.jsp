@@ -103,7 +103,7 @@
         <a href="<%= request.getContextPath() %>/manage-products.jsp">📦 Quản lý sản phẩm</a>
 
         <a href="<%= request.getContextPath() %>/manage.jsp">
-            🧾 Quản lý đơn hàng ▼
+            🧾 Quản lý đơn hàng
         </a>
     </div>
 
