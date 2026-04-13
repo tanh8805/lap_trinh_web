@@ -257,7 +257,7 @@
     <a href="index.jsp" class="logo">ShopWeb</a>
     <div class="menu">
         <a href="products">Sản phẩm</a>
-
+        <a href="contact.jsp">Liên Hệ</a>
         <% if (session.getAttribute("loggedInUser") != null) { %>
             <a href="<%= request.getContextPath() %>/logout">Đăng xuất</a>
         <% } else { %>
