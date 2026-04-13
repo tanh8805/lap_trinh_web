@@ -88,10 +88,50 @@ public class CartServlet extends HttpServlet {
             case "remove":     handleRemove(request, response);     break;
             case "changeSize": handleChangeSize(request, response); break;
             case "checkout":   handleCheckout(request, response);   break;
+            case "buyNow":     handleBuyNow(request, response);     break;
             default:
                 response.sendRedirect(request.getContextPath() + "/cart");
         }
     }
+    
+    private void handleBuyNow(HttpServletRequest request, HttpServletResponse response)
+        throws IOException {
+
+    int variantId = parseIntParam(request.getParameter("variantId"), -1);
+    int quantity = parseIntParam(request.getParameter("quantity"), 1);
+    int productId = parseIntParam(request.getParameter("productId"), -1);
+
+    if (variantId < 0 || quantity <= 0) {
+        response.sendRedirect(request.getContextPath() + "/products");
+        return;
+    }
+
+    CartItem newItem = cartDAO.getCartItemByVariantId(variantId);
+    if (newItem == null) {
+        response.sendRedirect(request.getContextPath() + "/products/detail?id=" + productId);
+        return;
+    }
+
+    HttpSession session = request.getSession(true);
+    List<CartItem> cart = getCartFromSession(session);
+
+    boolean found = false;
+    for (CartItem item : cart) {
+        if (item.getVariantId() == variantId) {
+            item.setQuantity(quantity);
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) {
+        newItem.setQuantity(quantity);
+        cart.add(newItem);
+    }
+
+    session.setAttribute(SESSION_CART, cart);
+    response.sendRedirect(request.getContextPath() + "/checkout.jsp?selectedIds=" + variantId);
+}
 
     // Them san pham vao gio voi variantId cu the
     private void handleAdd(HttpServletRequest request, HttpServletResponse response)
@@ -391,21 +431,20 @@ if (totalAmount < 0) {
 }
 
     // ===== 7. GHÉP ĐỊA CHỈ =====
-    String fullAddress = fullName + " | " + phone + " | "
-            + address
-            + (district != null && !district.trim().isEmpty() ? ", " + district : "")
-            + (city != null && !city.trim().isEmpty() ? ", " + city : "")
-            + " | Shipping: " + (shippingMethod != null ? shippingMethod : "standard")
-            + " | Payment: " + (paymentMethod != null ? paymentMethod : "cod");
-
+    String fullAddress = fullName + " | "
+        + address
+        + (district != null && !district.trim().isEmpty() ? ", " + district : "")
+        + (city != null && !city.trim().isEmpty() ? ", " + city : "");
     // ===== 8. LƯU DB =====
     OrderDAO orderDAO = new OrderDAO();
     boolean orderCreated = orderDAO.createOrder(
-            loggedInUser.getId(),
-            selectedItems,
-            totalAmount,
-            fullAddress
-    );
+        loggedInUser.getId(),
+        selectedItems,
+        totalAmount,
+        shippingFee,
+        fullAddress,
+        phone
+);
 
     // ===== 9. KẾT QUẢ =====
 if (orderCreated) {

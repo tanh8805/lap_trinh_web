@@ -4,13 +4,25 @@ C:\lap_trinh_web\src\main\java\com\example\shopweb\controller\ProductDetailServl
 C:\lap_trinh_web\src\main\java\com\example\shopweb\controller\ProductServlet.java
 C:\lap_trinh_web\src\main\java\com\example\shopweb\controller\LogoutServlet.java
 C:\lap_trinh_web\src\main\java\com\example\shopweb\model\User.java
+<<<<<<< Updated upstream
 C:\lap_trinh_web\src\main\java\com\example\shopweb\dao\UserDAO.java
 C:\lap_trinh_web\src\main\java\com\example\shopweb\model\Product.java
+=======
+C:\lap_trinh_web\src\main\java\com\example\shopweb\dao\ContactDAO.java
+C:\lap_trinh_web\src\main\java\com\example\shopweb\dao\UserDAO.java
+C:\lap_trinh_web\src\main\java\com\example\shopweb\model\Product.java
+C:\lap_trinh_web\src\main\java\com\example\shopweb\controller\AdminDashboardServlet.java
+>>>>>>> Stashed changes
 C:\lap_trinh_web\src\main\java\com\example\shopweb\dao\CartDAO.java
 C:\lap_trinh_web\src\main\java\com\example\shopweb\dao\OrderDAO.java
 C:\lap_trinh_web\src\main\java\com\example\shopweb\utils\DBConnection.java
 C:\lap_trinh_web\src\main\java\com\example\shopweb\controller\CartServlet.java
 C:\lap_trinh_web\src\main\java\com\example\shopweb\controller\LoginServlet.java
+<<<<<<< Updated upstream
+=======
+C:\lap_trinh_web\src\main\java\com\example\shopweb\model\Contact.java
+C:\lap_trinh_web\src\main\java\com\example\shopweb\controller\ContactServlet.java
+>>>>>>> Stashed changes
 C:\lap_trinh_web\src\main\java\com\example\shopweb\controller\RegisterServlet.java
 C:\lap_trinh_web\src\main\java\com\example\shopweb\dao\ProductDAO.java
 C:\lap_trinh_web\src\main\java\com\example\shopweb\model\CartItem.java

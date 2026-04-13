@@ -172,7 +172,12 @@
             <%-- Nút hành động --%>
             <div class="btn-group">
                 <button class="btn-cart" onclick="addToCart()">🛒 Thêm vào giỏ hàng</button>
-                <button class="btn-buy"  onclick="buyNow()">Mua ngay</button>
+                <form id="buyNowForm" action="<%= contextPath %>/cart?action=buyNow" method="post" style="display:inline;">
+                    <input type="hidden" name="productId" value="<%= product.getId() %>">
+                    <input type="hidden" name="variantId" id="buyNowVariantId">
+                    <input type="hidden" name="quantity" id="buyNowQuantity" value="1">
+                    <button type="submit" class="btn-buy">Mua ngay</button>
+                </form>
             </div>
         </div>
     </div>
@@ -276,6 +281,7 @@
         });
     }
 
+<<<<<<< Updated upstream
     function buyNow() {
         if (!selectedSize) {
             alert('Vui lòng chọn size!');
@@ -283,6 +289,25 @@
         }
         alert('Tính năng mua ngay sẽ được phát triển!');
     }
+=======
+    document.getElementById('buyNowForm').addEventListener('submit', function(e) {
+    if (!selectedSize) {
+        alert('Vui lòng chọn size!');
+        e.preventDefault();
+        return;
+    }
+
+    var selectedVariantId = variantIdBySize[selectedSize];
+    if (!selectedVariantId) {
+        alert('Không tìm thấy biến thể cho size đã chọn!');
+        e.preventDefault();
+        return;
+    }
+
+    document.getElementById('buyNowVariantId').value = selectedVariantId;
+    document.getElementById('buyNowQuantity').value = document.getElementById('quantity').value;
+});
+>>>>>>> Stashed changes
 
     // ===== TOAST =====
     var toastTimer = null;
