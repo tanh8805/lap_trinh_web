@@ -84,6 +84,13 @@
         }
     </style>
 
+    <script>
+        function toggleDropdown() {
+            var dropdown = document.getElementById("orderDropdown");
+            dropdown.style.display =
+                dropdown.style.display === "block" ? "none" : "block";
+        }
+    </script>
 </head>
 <body>
 
@@ -95,7 +102,15 @@
 
         <a href="<%= request.getContextPath() %>/manage-products.jsp">📦 Quản lý sản phẩm</a>
 
-        <a href="<%= request.getContextPath() %>/orders/manage.jsp">🧾 Quản lý đơn hàng</a>
+        <a href="javascript:void(0)" onclick="toggleDropdown()">
+            🧾 Quản lý đơn hàng ▼
+        </a>
+
+        <div id="orderDropdown" class="dropdown" style="display:none;">
+            <a href="<%= request.getContextPath() %>/orders/all-products.jsp">Tất cả đơn</a>
+            <a href="<%= request.getContextPath() %>/orders/process-products.jsp">Đang xử lý</a>
+            <a href="<%= request.getContextPath() %>/orders/done-products.jsp">Hoàn thành</a>
+        </div>
     </div>
 
     <div class="main">
