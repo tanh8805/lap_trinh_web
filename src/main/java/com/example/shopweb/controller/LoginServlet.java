@@ -62,7 +62,7 @@ public class LoginServlet extends HttpServlet {
             newSession.setMaxInactiveInterval(30 * 60); // Session tồn tại tối đa 30 phút
 
             if (user.isAdmin()) {
-                response.sendRedirect(request.getContextPath() + "/admin/dashboard");
+                response.sendRedirect(request.getContextPath() + "/admin");
             } else {
                 response.sendRedirect(request.getContextPath() + "/");
             }
