@@ -188,8 +188,25 @@
     var selectedSize  = null;
     // variantPrices: map size → giá lấy từ server qua JSP
     var variantPrices = <%= vJson %>;
+    // variantIdBySize: map size → variantId lấy từ CartServlet
+    var variantIdBySize = {};
     var productId     = <%= product.getId() %>;
     var productName   = '<%= product.getName().replace("'", "\\'") %>';
+
+    // Tải danh sách variant để gửi đúng variantId khi thêm vào giỏ
+    fetch('<%= contextPath %>/cart?action=variants&productId=' + productId)
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (!data || !Array.isArray(data.variants)) return;
+            data.variants.forEach(function(v) {
+                if (v && v.size != null && v.variantId != null) {
+                    variantIdBySize[String(v.size)] = Number(v.variantId);
+                }
+            });
+        })
+        .catch(function() {
+            // Không chặn UX; addToCart sẽ báo lỗi rõ nếu chưa có variantId
+        });
 
     // ===== CHỌN SIZE — cập nhật giá theo size =====
     document.querySelectorAll('.size-btn').forEach(function(btn) {
@@ -219,10 +236,16 @@
         if (parseInt(qty.value) > 1) qty.value = parseInt(qty.value) - 1;
     }
 
-    // ===== THÊM VÀO GIỎ — gửi productId lên CartServlet =====
+    // ===== THÊM VÀO GIỎ — gửi variantId lên CartServlet =====
     function addToCart() {
         if (!selectedSize) {
             alert('Vui lòng chọn size!');
+            return;
+        }
+
+        var selectedVariantId = variantIdBySize[selectedSize];
+        if (!selectedVariantId) {
+            showToast('✗ Không tìm thấy biến thể cho size đã chọn');
             return;
         }
 
@@ -230,15 +253,15 @@
         btn.disabled = true;
         btn.textContent = 'Đang thêm...';
 
-        // Frontend chỉ gửi productId — backend tự lấy thông tin từ DB
+        // Backend yêu cầu variantId tương ứng với size đã chọn
         fetch('<%= contextPath %>/cart?action=add', {
             method  : 'POST',
             headers : { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body    : 'productId=' + productId
+            body    : 'variantId=' + encodeURIComponent(selectedVariantId)
         })
         .then(function(res) { return res.json(); })
         .then(function(data) {
-            if (data.success) {
+            if (data && (data.success === true || data.status === 'ok')) {
                 showToast('✓ Đã thêm "' + productName + '" vào giỏ hàng!');
             } else {
                 showToast('✗ ' + (data.message || 'Có lỗi xảy ra'));

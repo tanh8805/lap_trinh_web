@@ -266,7 +266,7 @@
         <% } %>
 
         <%-- Icon giỏ hàng --%>
-        <a href="cart.jsp" class="cart-link" title="Giỏ hàng">
+       <a href="<%= request.getContextPath() %>/cart" class="cart-link" title="Giỏ hàng">
             🛒
             <span class="cart-badge" id="cartBadge">0</span>
         </a>
@@ -506,27 +506,35 @@
         applyFilter();
     })();
 
-    // ===== Cập nhật badge giỏ hàng từ localStorage =====
-    function updateCartBadge() {
-        var badge = document.getElementById('cartBadge');
-        try {
-            var cart = JSON.parse(localStorage.getItem('shopweb_cart') || '[]');
-            var totalQty = cart.reduce(function(sum, item) {
-                return sum + (parseInt(item.quantity) || 0);
-            }, 0);
-            if (totalQty > 0) {
-                badge.textContent = totalQty > 99 ? '99+' : totalQty;
+    function updateCartBadge(count) {
+    var badge = document.getElementById('cartBadge');
+    if (count > 0) {
+        badge.textContent   = count > 99 ? '99+' : count;
+        badge.style.display = 'flex';
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+        // Gọi server lấy số lượng khi tải trang
+        fetch('<%= request.getContextPath()%>/cart/count')
+            .then(function(r) { return r.json(); })
+            .then(function(d) { updateCartBadge(d.cartCount || 0); })
+            .catch(function() {});function updateCartBadge(count) {
+            var badge = document.getElementById('cartBadge');
+            if (count > 0) {
+                badge.textContent   = count > 99 ? '99+' : count;
                 badge.style.display = 'flex';
             } else {
                 badge.style.display = 'none';
             }
-        } catch (e) {
-            badge.style.display = 'none';
         }
-    }
 
-    updateCartBadge();
-    window.addEventListener('storage', updateCartBadge);
+        // Gọi server lấy số lượng khi tải trang
+        fetch('<%= request.getContextPath()%>/cart/count')
+            .then(function(r) { return r.json(); })
+            .then(function(d) { updateCartBadge(d.cartCount || 0); })
+            .catch(function() {});
 </script>
 
 </body>

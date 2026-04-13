@@ -1,25 +1,16 @@
-<<<<<<< HEAD
-D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\controller\ProductServlet.java
-D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\dao\ProductDAO.java
+D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\model\CartItem.java
 D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\JakartaRestConfiguration.java
 D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\model\User.java
-D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\controller\RegisterServlet.java
+D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\controller\ProductDetailServlet.java
 D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\dao\UserDAO.java
-D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\utils\DBConnection.java
-D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\controller\LoginServlet.java
 D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\resources\JakartaEE8Resource.java
 D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\model\Product.java
+D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\controller\CartServlet.java
+D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\dao\CartDAO.java
+D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\controller\ProductServlet.java
+D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\dao\ProductDAO.java
+D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\controller\RegisterServlet.java
+D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\utils\DBConnection.java
+D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\controller\LoginServlet.java
+D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\dao\OrderDAO.java
 D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\controller\LogoutServlet.java
-=======
-C:\Users\trinh\Downloads\lap_trinh_web-main\src\main\java\com\example\shopweb\controller\RegisterServlet.java
-C:\Users\trinh\Downloads\lap_trinh_web-main\src\main\java\com\example\shopweb\resources\JakartaEE8Resource.java
-C:\Users\trinh\Downloads\lap_trinh_web-main\src\main\java\com\example\shopweb\controller\LoginServlet.java
-C:\Users\trinh\Downloads\lap_trinh_web-main\src\main\java\com\example\shopweb\controller\LogoutServlet.java
-C:\Users\trinh\Downloads\lap_trinh_web-main\src\main\java\com\example\shopweb\utils\DBConnection.java
-C:\Users\trinh\Downloads\lap_trinh_web-main\src\main\java\com\example\shopweb\controller\ProductServlet.java
-C:\Users\trinh\Downloads\lap_trinh_web-main\src\main\java\com\example\shopweb\JakartaRestConfiguration.java
-C:\Users\trinh\Downloads\lap_trinh_web-main\src\main\java\com\example\shopweb\dao\ProductDAO.java
-C:\Users\trinh\Downloads\lap_trinh_web-main\src\main\java\com\example\shopweb\dao\UserDAO.java
-C:\Users\trinh\Downloads\lap_trinh_web-main\src\main\java\com\example\shopweb\model\Product.java
-C:\Users\trinh\Downloads\lap_trinh_web-main\src\main\java\com\example\shopweb\model\User.java
->>>>>>> origin/feature-add-to-cart-button
