@@ -1,5 +1,5 @@
 -File products.jsp:
-	1. CSS (dòng 239–412) — thêm mới: .btn-row, .btn-open-modal (dòng 239–270); toàn bộ #cartModal, .modal-* (dòng 272–375); #toast, #toast-close (dòng 377–412).	
+	1. CSS (dòng 239–412) — thêm mới: .btn-row, .btn-open-modal (dòng 239–270); toàn bộ #cartModal, .modal-* (dòng 272–375); #toast, #toast-close (dòng 377–412).
 	2.HTML card (dòng 574–608) — thay nút <a class="btn-view">Xem chi tiết</a> đơn lẻ bằng .btn-row chứa 2 nút; nút 🛒 dùng data-* attribute (data-product-id, data-product-name, data-product-price, data-product-image, data-product-sizes, data-variant-prices) thay vì onclick inline để tránh lỗi ký tự đặc biệt.
 	3.HTML body (dòng 622–651) — thêm HTML modal #cartModal sau </footer> (dòng 622–645) và toast #toast có nút X (dòng 647–651).
 	4.Script (dòng 747–898):
@@ -17,4 +17,7 @@
 -File ProductDAO.java:
 	1.Trong getAllProducts() — thêm vòng lặp gọi getVariantPrices() cho từng product sau khi điền sizes(dòng 71–73).
 	2.Thêm method getProductById(int id) (dòng 76–101) — query 1 sản phẩm theo ID, gọi getVariantPrices()
-	3.Thêm method private getVariantPrices(int productId) (dòng 108–124) — query product_variants WHERE product_id = ? AND stock_quantity > 0, trả về Map<String, Double>, dùng PreparedStatement + try-with-resources.
+	3.Thêm method private getVariantPrices(int productId) (dòng 108–124) — query product_variants WHERE product_id = ? AND stock_quantity > 0, trả về Map<String, Double>, dùng PreparedStatement + try-with-resources.\
+-Thêm các file checkout, order-success, bank-transfer
+-File CartServlet :
+    1. Sửa handlecheckout

@@ -392,15 +392,14 @@
 
         <p class="warn-select" id="warnSelect">⚠ Vui lòng chọn ít nhất 1 sản phẩm để thanh toán.</p>
 
-        <form action="<%= request.getContextPath() %>/cart" method="post" id="checkoutForm">
-            <input type="hidden" name="action"        value="checkout">
-            <input type="hidden" name="discountAmount" id="hiddenDiscount"    value="0">
-            <input type="hidden" name="voucherCode"    id="hiddenVoucherCode" value="">
-            <input type="hidden" name="selectedIds"    id="hiddenSelectedIds" value="">
-            <button type="button" class="btn-checkout" id="btnCheckout" disabled>
-                🛍 Tiến hành thanh toán
-            </button>
-        </form>
+        <form action="<%= request.getContextPath() %>/checkout.jsp" method="get" id="checkoutForm">
+    <input type="hidden" name="discountAmount" id="hiddenDiscount" value="0">
+    <input type="hidden" name="voucherCode" id="hiddenVoucherCode" value="">
+    <div id="selectedIdsContainer"></div>
+    <button type="button" class="btn-checkout" id="btnCheckout" disabled>
+        🛍 Tiến hành thanh toán
+    </button>
+</form>
         <p class="selected-summary" id="selectedSummary"></p>
     </aside>
     <% } %>
@@ -502,7 +501,16 @@
         // Dien vao hidden inputs de gui len server
         document.getElementById('hiddenDiscount').value    = discount;
         document.getElementById('hiddenVoucherCode').value = appliedVoucher ? appliedVoucher.code : '';
-        document.getElementById('hiddenSelectedIds').value = selectedIds.join(',');
+        var selectedIdsContainer = document.getElementById('selectedIdsContainer');
+selectedIdsContainer.innerHTML = '';
+
+selectedIds.forEach(function(id) {
+    var input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'selectedIds';
+    input.value = id;
+    selectedIdsContainer.appendChild(input);
+});
 
         // Enable/disable nut checkout
         var btn = document.getElementById('btnCheckout');

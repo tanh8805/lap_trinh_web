@@ -14,7 +14,9 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @WebServlet("/cart")
 public class CartServlet extends HttpServlet {
@@ -234,64 +236,191 @@ public class CartServlet extends HttpServlet {
 
     // Thanh toan cac san pham duoc chon, giu lai phan con lai
     private void handleCheckout(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+        throws ServletException, IOException {
 
-        HttpSession session = request.getSession(false);
-        User loggedInUser = (session != null)
-                ? (User) session.getAttribute("loggedInUser") : null;
+    HttpSession session = request.getSession();
+    User loggedInUser = (User) session.getAttribute("loggedInUser");
 
-        if (loggedInUser == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
-        }
+    // ===== 1. CHƯA LOGIN =====
+    if (loggedInUser == null) {
+        String[] selectedIds = request.getParameterValues("selectedIds");
 
-        List<CartItem> fullCart = getCartFromSession(session);
-        if (fullCart.isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/cart");
-            return;
-        }
+        StringBuilder redirectUrl = new StringBuilder();
+        redirectUrl.append(request.getContextPath()).append("/checkout.jsp");
 
-        List<Integer> selectedIds = parseIdList(request.getParameter("selectedIds"));
-        if (selectedIds.isEmpty()) {
-            request.setAttribute("error", "Vui long chon it nhat 1 san pham de thanh toan.");
-            doGet(request, response);
-            return;
-        }
-
-        // Tach gio: selected -> thanh toan, remaining -> giu lai
-        List<CartItem> selectedItems  = new ArrayList<>();
-        List<CartItem> remainingItems = new ArrayList<>();
-        for (CartItem item : fullCart) {
-            if (selectedIds.contains(item.getVariantId())) selectedItems.add(item);
-            else                                            remainingItems.add(item);
-        }
-
-        if (selectedItems.isEmpty()) {
-            request.setAttribute("error", "Khong tim thay san pham da chon. Vui long thu lai.");
-            doGet(request, response);
-            return;
-        }
-
-        String address = request.getParameter("address");
-        if (address == null) address = "";
-
-        double discount    = parseDoubleParam(request.getParameter("discountAmount"), 0.0);
-        double subtotal    = selectedItems.stream().mapToDouble(CartItem::getSubtotal).sum();
-        double totalAmount = Math.max(0, subtotal - discount);
-
-        boolean success = orderDAO.createOrder(
-                loggedInUser.getId(), selectedItems, totalAmount, address.trim());
-
-        if (success) {
-            if (session != null) {
-                if (remainingItems.isEmpty()) session.removeAttribute(SESSION_CART);
-                else                         session.setAttribute(SESSION_CART, remainingItems);
+        if (selectedIds != null) {
+            redirectUrl.append("?");
+            for (int i = 0; i < selectedIds.length; i++) {
+                if (i > 0) redirectUrl.append("&");
+                redirectUrl.append("selectedIds=").append(selectedIds[i]);
             }
-            response.sendRedirect(request.getContextPath() + "/cart?orderSuccess=true");
-        } else {
-            request.setAttribute("error", "Da xay ra loi khi dat hang. Vui long thu lai.");
-            doGet(request, response);
         }
+
+        session.setAttribute("redirectAfterLogin", redirectUrl.toString());
+        response.sendRedirect(request.getContextPath() + "/login");
+        return;
+    }
+
+    // ===== 2. LẤY CART =====
+    @SuppressWarnings("unchecked")
+    List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
+
+    if (cart == null || cart.isEmpty()) {
+        response.sendRedirect(request.getContextPath() + "/cart");
+        return;
+    }
+
+    String[] selectedIds = request.getParameterValues("selectedIds");
+
+    if (selectedIds == null || selectedIds.length == 0) {
+        response.sendRedirect(request.getContextPath() + "/cart");
+        return;
+    }
+
+    // ===== 3. LẤY FORM =====
+    String fullName = request.getParameter("fullName");
+    String phone = request.getParameter("phone");
+    String city = request.getParameter("city");
+    String district = request.getParameter("district");
+    String address = request.getParameter("address");
+    String shippingMethod = request.getParameter("shippingMethod");
+    String paymentMethod = request.getParameter("paymentMethod");
+    String discountAmountStr = request.getParameter("discountAmount");
+
+    // ===== 4. VALIDATE =====
+    fullName = fullName != null ? fullName.trim() : "";
+phone = phone != null ? phone.trim() : "";
+city = city != null ? city.trim() : "";
+district = district != null ? district.trim() : "";
+address = address != null ? address.trim() : "";
+
+if (fullName.isEmpty() || phone.isEmpty() || city.isEmpty() || district.isEmpty() || address.isEmpty()) {
+    StringBuilder errorRedirect = new StringBuilder();
+    errorRedirect.append(request.getContextPath()).append("/checkout.jsp?error=missing_info");
+
+    for (String id : selectedIds) {
+        errorRedirect.append("&selectedIds=").append(id);
+    }
+
+    errorRedirect.append("&fullName=").append(java.net.URLEncoder.encode(fullName, "UTF-8"));
+    errorRedirect.append("&phone=").append(java.net.URLEncoder.encode(phone, "UTF-8"));
+    errorRedirect.append("&city=").append(java.net.URLEncoder.encode(city, "UTF-8"));
+    errorRedirect.append("&district=").append(java.net.URLEncoder.encode(district, "UTF-8"));
+    errorRedirect.append("&address=").append(java.net.URLEncoder.encode(address, "UTF-8"));
+    errorRedirect.append("&shippingMethod=").append(java.net.URLEncoder.encode(shippingMethod == null ? "standard" : shippingMethod, "UTF-8"));
+    errorRedirect.append("&paymentMethod=").append(java.net.URLEncoder.encode(paymentMethod == null ? "cod" : paymentMethod, "UTF-8"));
+    errorRedirect.append("&discountAmount=").append(java.net.URLEncoder.encode(discountAmountStr == null ? "0" : discountAmountStr, "UTF-8"));
+
+    response.sendRedirect(errorRedirect.toString());
+    return;
+}
+
+boolean validFullName = fullName.matches("^[\\p{L} ]{2,100}$");
+boolean validPhone = phone.matches("^0\\d{9}$");
+boolean validCity = city.length() >= 2 && city.length() <= 100;
+boolean validDistrict = district.length() >= 2 && district.length() <= 100;
+boolean validAddress = address.length() >= 5 && address.length() <= 255;
+
+if (!validFullName || !validPhone || !validCity || !validDistrict || !validAddress) {
+    StringBuilder errorRedirect = new StringBuilder();
+    errorRedirect.append(request.getContextPath()).append("/checkout.jsp?error=invalid_info");
+
+    for (String id : selectedIds) {
+        errorRedirect.append("&selectedIds=").append(id);
+    }
+
+    errorRedirect.append("&fullName=").append(java.net.URLEncoder.encode(fullName, "UTF-8"));
+    errorRedirect.append("&phone=").append(java.net.URLEncoder.encode(phone, "UTF-8"));
+    errorRedirect.append("&city=").append(java.net.URLEncoder.encode(city, "UTF-8"));
+    errorRedirect.append("&district=").append(java.net.URLEncoder.encode(district, "UTF-8"));
+    errorRedirect.append("&address=").append(java.net.URLEncoder.encode(address, "UTF-8"));
+    errorRedirect.append("&shippingMethod=").append(java.net.URLEncoder.encode(shippingMethod == null ? "standard" : shippingMethod, "UTF-8"));
+    errorRedirect.append("&paymentMethod=").append(java.net.URLEncoder.encode(paymentMethod == null ? "cod" : paymentMethod, "UTF-8"));
+    errorRedirect.append("&discountAmount=").append(java.net.URLEncoder.encode(discountAmountStr == null ? "0" : discountAmountStr, "UTF-8"));
+
+    response.sendRedirect(errorRedirect.toString());
+    return;
+}
+
+    // ===== 5. TÁCH ITEM =====
+    List<CartItem> selectedItems = new ArrayList<>();
+    List<CartItem> remainingItems = new ArrayList<>();
+
+    Set<Integer> selectedIdSet = new HashSet<>();
+    for (String id : selectedIds) {
+        try {
+            selectedIdSet.add(Integer.parseInt(id));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    for (CartItem item : cart) {
+        if (selectedIdSet.contains(item.getVariantId())) {
+            selectedItems.add(item);
+        } else {
+            remainingItems.add(item);
+        }
+    }
+
+    if (selectedItems.isEmpty()) {
+        response.sendRedirect(request.getContextPath() + "/cart");
+        return;
+    }
+
+    // ===== 6. TÍNH TIỀN =====
+    double subtotal = 0;
+    for (CartItem item : selectedItems) {
+        subtotal += item.getPrice() * item.getQuantity();
+    }
+
+    double discount = 0;
+    try {
+        if (discountAmountStr != null && !discountAmountStr.trim().isEmpty()) {
+            discount = Double.parseDouble(discountAmountStr);
+        }
+    } catch (Exception e) {
+        discount = 0;
+    }
+
+    int shippingFee = "express".equalsIgnoreCase(shippingMethod) ? 50000 : 30000;
+
+    double totalAmount = subtotal + shippingFee - discount;
+if (totalAmount < 0) {
+    totalAmount = 0;
+}
+
+    // ===== 7. GHÉP ĐỊA CHỈ =====
+    String fullAddress = fullName + " | " + phone + " | "
+            + address
+            + (district != null && !district.trim().isEmpty() ? ", " + district : "")
+            + (city != null && !city.trim().isEmpty() ? ", " + city : "")
+            + " | Shipping: " + (shippingMethod != null ? shippingMethod : "standard")
+            + " | Payment: " + (paymentMethod != null ? paymentMethod : "cod");
+
+    // ===== 8. LƯU DB =====
+    OrderDAO orderDAO = new OrderDAO();
+    boolean orderCreated = orderDAO.createOrder(
+            loggedInUser.getId(),
+            selectedItems,
+            totalAmount,
+            fullAddress
+    );
+
+    // ===== 9. KẾT QUẢ =====
+if (orderCreated) {
+    session.setAttribute("cart", remainingItems);
+
+    if ("banking".equalsIgnoreCase(paymentMethod)) {
+        session.setAttribute("qrAmount", (long) totalAmount);
+        session.setAttribute("qrOrderInfo", "DH" + System.currentTimeMillis());
+        response.sendRedirect(request.getContextPath() + "/bank-transfer.jsp");
+    } else {
+        response.sendRedirect(request.getContextPath() + "/order-success.jsp");
+    }
+} else {
+    response.sendRedirect(request.getContextPath() + "/checkout.jsp?error=order_failed");
+}
     }
 
     // Helper: tra JSON cho fetch request
