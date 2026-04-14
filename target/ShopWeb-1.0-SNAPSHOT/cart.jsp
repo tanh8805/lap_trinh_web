@@ -281,8 +281,7 @@
                             <input type="checkbox" class="row-check"
                                    data-index="<%= rowIndex %>"
                                    data-variant-id="<%= item.getVariantId() %>"
-                                   data-subtotal="<%= item.getSubtotal() %>"
-                                   checked>
+                                   data-subtotal="<%= item.getSubtotal() %>">
                         </td>
                         <td>
                             <div class="product-cell">
@@ -638,7 +637,8 @@ selectedIds.forEach(function(id) {
         // Key tu nut +/-: danh sach variantId DUOC check
         var raw = sessionStorage.getItem(STORAGE_KEY);
         if (!raw) {
-            // Lan dau vao trang: mac dinh tick het
+            // Lan dau vao trang: mac dinh bo tick het
+            getRowCheckboxes().forEach(function(cb) { cb.checked = false; });
             updateSummary();
             return;
         }
