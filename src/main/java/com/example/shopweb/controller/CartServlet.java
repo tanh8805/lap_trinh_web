@@ -132,16 +132,24 @@ public class CartServlet extends HttpServlet {
         HttpSession session = request.getSession(true);
         List<CartItem> cart = getCartFromSession(session);
 
+        // Đọc số lượng từ request, mặc định 1 nếu không có
+        int quantity = parseIntParam(request.getParameter("quantity"), 1);
+        if (quantity < 1)
+            quantity = 1;
+
         boolean found = false;
         for (CartItem item : cart) {
             if (item.getVariantId() == variantId) {
-                item.setQuantity(item.getQuantity() + 1);
+                // Cộng dồn số lượng được chọn vào số lượng hiện có
+                item.setQuantity(item.getQuantity() + quantity);
                 found = true;
                 break;
             }
         }
-        if (!found)
+        if (!found) {
+            newItem.setQuantity(quantity);
             cart.add(newItem);
+        }
 
         session.setAttribute(SESSION_CART, cart);
 
@@ -422,7 +430,7 @@ public class CartServlet extends HttpServlet {
         // ===== 7. GHÉP ĐỊA CHỈ =====
         String fullAddress = address
                 + (district != null && !district.trim().isEmpty() ? ", " + district : "")
-            + (city != null && !city.trim().isEmpty() ? ", " + city : "");
+                + (city != null && !city.trim().isEmpty() ? ", " + city : "");
 
         // ===== 8. LƯU DB =====
         OrderDAO orderDAO = new OrderDAO();
