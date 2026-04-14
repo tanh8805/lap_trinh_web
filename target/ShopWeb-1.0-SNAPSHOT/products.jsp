@@ -244,6 +244,41 @@
             font-size: 16px;
         }
 
+        /* ===== PHÂN TRANG ===== */
+        .pagination-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            margin-top: 36px;
+            flex-wrap: wrap;
+        }
+        .page-btn {
+            min-width: 36px;
+            height: 36px;
+            padding: 0 10px;
+            border: 1.5px solid #ddd;
+            border-radius: 4px;
+            background: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            color: #333;
+            font-weight: 500;
+        }
+        .page-btn:hover:not(:disabled) { border-color: #000; color: #000; }
+        .page-btn.active { background: #000; color: #fff; border-color: #000; }
+        .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+        .page-info {
+            font-size: 13px;
+            color: #888;
+            margin-top: 10px;
+            text-align: center;
+        }
+
         footer {
             background: #111; color: #fff;
             text-align: center; padding: 20px;
@@ -406,6 +441,9 @@
             %>
             <p id="noResult">Không tìm thấy sản phẩm phù hợp.</p>
         </div>
+
+        <div class="pagination-wrapper" id="paginationWrapper"></div>
+        <p class="page-info" id="pageInfo"></p>
     </main>
 
 </div>
@@ -413,23 +451,26 @@
 <footer>© 2026 ShopWeb. All rights reserved.</footer>
 
 <script>
-    // ===== BỘ LỌC CLIENT-SIDE =====
-    // Toàn bộ logic lọc chạy trên DOM — không reload trang, không gọi server
+    // ===== BỘ LỌC + PHÂN TRANG CLIENT-SIDE =====
 
-    const cards          = document.querySelectorAll('.product-card');
-    const searchInput    = document.getElementById('searchInput');
-    const categoryFilter = document.getElementById('categoryFilter');
-    const priceMin       = document.getElementById('priceMin');
-    const priceMax       = document.getElementById('priceMax');
-    const sizeBtns       = document.querySelectorAll('.size-btn');
-    const resultCount    = document.getElementById('resultCount');
-    const noResult       = document.getElementById('noResult');
-    const btnReset       = document.getElementById('btnReset');
+    const cards             = Array.from(document.querySelectorAll('.product-card'));
+    const searchInput       = document.getElementById('searchInput');
+    const categoryFilter    = document.getElementById('categoryFilter');
+    const priceMin          = document.getElementById('priceMin');
+    const priceMax          = document.getElementById('priceMax');
+    const sizeBtns          = document.querySelectorAll('.size-btn');
+    const resultCount       = document.getElementById('resultCount');
+    const noResult          = document.getElementById('noResult');
+    const btnReset          = document.getElementById('btnReset');
+    const paginationWrapper = document.getElementById('paginationWrapper');
+    const pageInfo          = document.getElementById('pageInfo');
 
-    // Tập hợp các size đang được chọn (hỗ trợ chọn nhiều cùng lúc)
+    const ITEMS_PER_PAGE = 9;
+    let currentPage  = 1;
+    let filteredCards = [];
+
     const selectedSizes = new Set();
 
-    // Toggle chọn / bỏ chọn size
     sizeBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             const size = btn.dataset.size;
@@ -440,15 +481,15 @@
                 selectedSizes.add(size);
                 btn.classList.add('active');
             }
+            currentPage = 1;
             applyFilter();
         });
     });
 
-    // Lắng nghe thay đổi trên các bộ lọc còn lại
-    searchInput.addEventListener('input', applyFilter);
-    categoryFilter.addEventListener('change', applyFilter);
-    priceMin.addEventListener('input', applyFilter);
-    priceMax.addEventListener('input', applyFilter);
+    searchInput.addEventListener('input',    () => { currentPage = 1; applyFilter(); });
+    categoryFilter.addEventListener('change',() => { currentPage = 1; applyFilter(); });
+    priceMin.addEventListener('input',       () => { currentPage = 1; applyFilter(); });
+    priceMax.addEventListener('input',       () => { currentPage = 1; applyFilter(); });
 
     function applyFilter() {
         const keyword  = searchInput.value.trim().toLowerCase();
@@ -456,9 +497,9 @@
         const minVal   = parseFloat(priceMin.value) || 0;
         const maxVal   = parseFloat(priceMax.value) || Infinity;
 
-        let visibleCount = 0;
+        cards.forEach(card => card.classList.add('hidden'));
 
-        cards.forEach(card => {
+        filteredCards = cards.filter(card => {
             const name      = card.dataset.name;
             const cat       = (card.dataset.category || '').trim().toLowerCase();
             const price     = parseFloat(card.dataset.price) || 0;
@@ -467,24 +508,91 @@
             const matchName     = name.includes(keyword);
             const matchCategory = !category || cat === category;
             const matchPrice    = price >= minVal && price <= maxVal;
+            const matchSize     = selectedSizes.size === 0
+                                  || cardSizes.some(s => selectedSizes.has(s));
 
-            // Nếu chưa chọn size nào thì bỏ qua điều kiện size
-            const matchSize = selectedSizes.size === 0
-                || cardSizes.some(s => selectedSizes.has(s));
+            return matchName && matchCategory && matchPrice && matchSize;
+        });
 
-            if (matchName && matchCategory && matchPrice && matchSize) {
-                card.classList.remove('hidden');
-                visibleCount++;
+        renderPage(currentPage);
+    }
+
+    function renderPage(page) {
+        const totalItems = filteredCards.length;
+        const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
+
+        if (page < 1) page = 1;
+        if (page > totalPages) page = totalPages;
+        currentPage = page;
+
+        const start = (currentPage - 1) * ITEMS_PER_PAGE;
+        const end   = start + ITEMS_PER_PAGE;
+
+        filteredCards.forEach((card, idx) => {
+            if (idx >= start && idx < end) card.classList.remove('hidden');
+            else card.classList.add('hidden');
+        });
+
+        const showFrom = totalItems === 0 ? 0 : start + 1;
+        const showTo   = Math.min(end, totalItems);
+        resultCount.textContent = 'Hiển thị ' + showFrom + '–' + showTo + ' trong ' + totalItems + ' sản phẩm';
+        noResult.style.display  = totalItems === 0 ? 'block' : 'none';
+
+        renderPagination(totalPages);
+    }
+
+    function renderPagination(totalPages) {
+        paginationWrapper.innerHTML = '';
+        pageInfo.textContent = '';
+
+        if (totalPages <= 1) return;
+
+        const btnPrev = makePageBtn('‹', currentPage === 1, () => renderPage(currentPage - 1));
+        paginationWrapper.appendChild(btnPrev);
+
+        buildPageRange(currentPage, totalPages).forEach(item => {
+            if (item === '...') {
+                const dots = document.createElement('span');
+                dots.textContent = '…';
+                dots.style.cssText = 'padding:0 4px;color:#aaa;display:flex;align-items:center;';
+                paginationWrapper.appendChild(dots);
             } else {
-                card.classList.add('hidden');
+                const btn = makePageBtn(item, false, () => renderPage(item));
+                if (item === currentPage) btn.classList.add('active');
+                paginationWrapper.appendChild(btn);
             }
         });
 
-        resultCount.textContent = 'Hiển thị ' + visibleCount + ' / ' + cards.length + ' sản phẩm';
-        noResult.style.display = visibleCount === 0 ? 'block' : 'none';
+        const btnNext = makePageBtn('›', currentPage === totalPages, () => renderPage(currentPage + 1));
+        paginationWrapper.appendChild(btnNext);
+
+        pageInfo.textContent = 'Trang ' + currentPage + ' / ' + totalPages;
     }
 
-    // Xóa toàn bộ bộ lọc
+    function makePageBtn(label, disabled, onClick) {
+        const btn = document.createElement('button');
+        btn.className   = 'page-btn';
+        btn.textContent = label;
+        btn.disabled    = disabled;
+        if (!disabled) btn.addEventListener('click', onClick);
+        return btn;
+    }
+
+    function buildPageRange(current, total) {
+        const delta = 2;
+        const range = new Set([1, total]);
+        for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) range.add(i);
+        const sorted = Array.from(range).sort((a, b) => a - b);
+        const result = [];
+        let prev = null;
+        for (const num of sorted) {
+            if (prev !== null && num - prev > 1) result.push('...');
+            result.push(num);
+            prev = num;
+        }
+        return result;
+    }
+
     btnReset.addEventListener('click', () => {
         searchInput.value    = '';
         categoryFilter.value = '';
@@ -492,15 +600,15 @@
         priceMax.value       = '';
         selectedSizes.clear();
         sizeBtns.forEach(btn => btn.classList.remove('active'));
+        currentPage = 1;
         applyFilter();
     });
 
-    // ===== Đọc query param ?category=... từ URL để pre-filter khi vào từ trang chủ =====
+    // ===== Đọc query param ?category=... từ URL =====
     (function() {
         var params = new URLSearchParams(window.location.search);
         var cat = params.get('category');
         if (cat) {
-            // Pre-fill dropdown theo so khop khong phan biet hoa/thuong.
             var target = cat.trim().toLowerCase();
             Array.from(categoryFilter.options).forEach(function(opt) {
                 if (opt.value && opt.value.trim().toLowerCase() === target) {
@@ -508,39 +616,24 @@
                 }
             });
         }
-        // Luôn chạy applyFilter dù có param hay không
         applyFilter();
     })();
 
+    // ===== Badge giỏ hàng từ server =====
     function updateCartBadge(count) {
-    var badge = document.getElementById('cartBadge');
-    if (count > 0) {
-        badge.textContent   = count > 99 ? '99+' : count;
-        badge.style.display = 'flex';
-    } else {
-        badge.style.display = 'none';
-    }
-}
-
-        // Gọi server lấy số lượng khi tải trang
-        fetch('<%= request.getContextPath()%>/cart/count')
-            .then(function(r) { return r.json(); })
-            .then(function(d) { updateCartBadge(d.cartCount || 0); })
-            .catch(function() {});function updateCartBadge(count) {
-            var badge = document.getElementById('cartBadge');
-            if (count > 0) {
-                badge.textContent   = count > 99 ? '99+' : count;
-                badge.style.display = 'flex';
-            } else {
-                badge.style.display = 'none';
-            }
+        var badge = document.getElementById('cartBadge');
+        if (count > 0) {
+            badge.textContent   = count > 99 ? '99+' : count;
+            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
         }
+    }
 
-        // Gọi server lấy số lượng khi tải trang
-        fetch('<%= request.getContextPath()%>/cart/count')
-            .then(function(r) { return r.json(); })
-            .then(function(d) { updateCartBadge(d.cartCount || 0); })
-            .catch(function() {});
+    fetch('<%= request.getContextPath()%>/cart/count')
+        .then(function(r) { return r.json(); })
+        .then(function(d) { updateCartBadge(d.cartCount || 0); })
+        .catch(function() {});
 </script>
 
 </body>
