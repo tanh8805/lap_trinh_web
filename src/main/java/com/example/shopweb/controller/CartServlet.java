@@ -44,7 +44,7 @@ public class CartServlet extends HttpServlet {
         request.getRequestDispatcher("/cart.jsp").forward(request, response);
     }
 
-    // Tra JSON danh sach variant (size + gia) cho popup
+
     private void handleGetVariants(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 
@@ -105,7 +105,7 @@ public class CartServlet extends HttpServlet {
         }
     }
 
-    // Them san pham vao gio voi variantId cu the
+
     private void handleAdd(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 
@@ -132,7 +132,7 @@ public class CartServlet extends HttpServlet {
         HttpSession session = request.getSession(true);
         List<CartItem> cart = getCartFromSession(session);
 
-        // Đọc số lượng từ request, mặc định 1 nếu không có
+
         int quantity = parseIntParam(request.getParameter("quantity"), 1);
         if (quantity < 1)
             quantity = 1;
@@ -140,7 +140,7 @@ public class CartServlet extends HttpServlet {
         boolean found = false;
         for (CartItem item : cart) {
             if (item.getVariantId() == variantId) {
-                // Cộng dồn số lượng được chọn vào số lượng hiện có
+
                 item.setQuantity(item.getQuantity() + quantity);
                 found = true;
                 break;
@@ -162,7 +162,7 @@ public class CartServlet extends HttpServlet {
         }
     }
 
-    // Cap nhat so luong theo variantId
+
     private void handleUpdate(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 
@@ -193,7 +193,7 @@ public class CartServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/cart");
     }
 
-    // Xoa 1 variant khoi gio
+
     private void handleRemove(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 
@@ -206,7 +206,7 @@ public class CartServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/cart");
     }
 
-    // Doi size: xoa variant cu, them variant moi, giu nguyen so luong
+
     private void handleChangeSize(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 
@@ -218,7 +218,7 @@ public class CartServlet extends HttpServlet {
             return;
         }
         if (oldVariantId == newVariantId) {
-            // Chon lai size cu, khong can lam gi
+
             sendJsonResult(response, true, null);
             return;
         }
@@ -226,7 +226,7 @@ public class CartServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         List<CartItem> cart = getCartFromSession(session);
 
-        // Lay quantity cua variant cu truoc khi xoa
+
         int oldQty = 1;
         for (CartItem item : cart) {
             if (item.getVariantId() == oldVariantId) {
@@ -242,10 +242,10 @@ public class CartServlet extends HttpServlet {
         }
         newItem.setQuantity(oldQty);
 
-        // Xoa variant cu
+
         cart.removeIf(item -> item.getVariantId() == oldVariantId);
 
-        // Neu variant moi da co trong gio thi tang so luong
+
         boolean found = false;
         for (CartItem item : cart) {
             if (item.getVariantId() == newVariantId) {
@@ -262,14 +262,14 @@ public class CartServlet extends HttpServlet {
         sendJsonResult(response, true, null);
     }
 
-    // Thanh toan cac san pham duoc chon, giu lai phan con lai
+
     private void handleCheckout(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         HttpSession session = request.getSession();
         User loggedInUser = (User) session.getAttribute("loggedInUser");
 
-        // ===== 1. CHƯA LOGIN =====
+
         if (loggedInUser == null) {
             String[] selectedIds = request.getParameterValues("selectedIds");
 
@@ -290,7 +290,7 @@ public class CartServlet extends HttpServlet {
             return;
         }
 
-        // ===== 2. LẤY CART =====
+
         @SuppressWarnings("unchecked")
         List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
 
@@ -306,7 +306,7 @@ public class CartServlet extends HttpServlet {
             return;
         }
 
-        // ===== 3. LẤY FORM =====
+
         String phone = request.getParameter("phone");
         String city = request.getParameter("city");
         String district = request.getParameter("district");
@@ -322,7 +322,7 @@ public class CartServlet extends HttpServlet {
             paymentMethod = "cod";
         }
 
-        // ===== 4. VALIDATE =====
+
         phone = phone != null ? phone.trim() : "";
         city = city != null ? city.trim() : "";
         district = district != null ? district.trim() : "";
@@ -379,7 +379,7 @@ public class CartServlet extends HttpServlet {
             return;
         }
 
-        // ===== 5. TÁCH ITEM =====
+
         List<CartItem> selectedItems = new ArrayList<>();
         List<CartItem> remainingItems = new ArrayList<>();
 
@@ -405,7 +405,7 @@ public class CartServlet extends HttpServlet {
             return;
         }
 
-        // ===== 6. TÍNH TIỀN =====
+
         double subtotal = 0;
         for (CartItem item : selectedItems) {
             subtotal += item.getPrice() * item.getQuantity();
@@ -427,12 +427,12 @@ public class CartServlet extends HttpServlet {
             totalAmount = 0;
         }
 
-        // ===== 7. GHÉP ĐỊA CHỈ =====
+
         String fullAddress = address
                 + (district != null && !district.trim().isEmpty() ? ", " + district : "")
                 + (city != null && !city.trim().isEmpty() ? ", " + city : "");
 
-        // ===== 8. LƯU DB =====
+
         OrderDAO orderDAO = new OrderDAO();
         boolean orderCreated = orderDAO.createOrder(
                 loggedInUser.getId(),
@@ -442,7 +442,7 @@ public class CartServlet extends HttpServlet {
                 fullAddress,
                 phone);
 
-        // ===== 9. KẾT QUẢ =====
+
         if (orderCreated) {
             session.setAttribute("cart", remainingItems);
 
@@ -458,7 +458,7 @@ public class CartServlet extends HttpServlet {
         }
     }
 
-    // Helper: tra JSON cho fetch request
+
     private void sendJsonResult(HttpServletResponse response, boolean ok, String msg)
             throws IOException {
         response.setContentType("application/json;charset=UTF-8");

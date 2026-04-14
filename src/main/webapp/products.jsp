@@ -357,7 +357,7 @@
                     List<Product> productList = (List<Product>) request.getAttribute("productList");
                     LinkedHashSet<String> allSizes = new LinkedHashSet<>();
 
-                    // Thứ tự hiển thị size chuẩn
+
                     List<String> sizeOrder = Arrays.asList("XS", "S", "M", "L", "XL", "XXL", "3XL");
 
                     if (productList != null) {
@@ -366,7 +366,7 @@
                         }
                     }
 
-                    // Sắp xếp: size chuẩn trước, size lạ thêm vào cuối
+
                     List<String> sortedSizes = new ArrayList<>();
                     for (String s : sizeOrder) { if (allSizes.contains(s)) sortedSizes.add(s); }
                     for (String s : allSizes)   { if (!sortedSizes.contains(s)) sortedSizes.add(s); }
@@ -392,7 +392,7 @@
                 if (productList != null && !productList.isEmpty()) {
                     for (Product p : productList) {
 
-                        // Xử lý đường dẫn ảnh
+
                         String rawUrl = p.getImageUrl();
                         String imagePath = request.getContextPath() + "/images/no-image.jpg";
                         if (rawUrl != null && !rawUrl.isEmpty()) {
@@ -401,7 +401,7 @@
                                 : request.getContextPath() + "/" + rawUrl;
                         }
 
-                        // Nối sizes thành chuỗi "S,M,L,XL" để lưu vào data attribute
+
                         String sizesAttr = "";
                         if (p.getSizes() != null && !p.getSizes().isEmpty()) {
                             sizesAttr = String.join(",", p.getSizes());
@@ -451,7 +451,7 @@
 <footer>© 2026 ShopWeb. All rights reserved.</footer>
 
 <script>
-    // ===== BỘ LỌC + PHÂN TRANG CLIENT-SIDE =====
+
 
     const cards             = Array.from(document.querySelectorAll('.product-card'));
     const searchInput       = document.getElementById('searchInput');
@@ -604,7 +604,7 @@
         applyFilter();
     });
 
-    // ===== Đọc query param ?category=... từ URL =====
+
     (function() {
         var params = new URLSearchParams(window.location.search);
         var cat = params.get('category');
@@ -619,7 +619,7 @@
         applyFilter();
     })();
 
-    // ===== Badge giỏ hàng từ server =====
+
     function updateCartBadge(count) {
         var badge = document.getElementById('cartBadge');
         if (count > 0) {

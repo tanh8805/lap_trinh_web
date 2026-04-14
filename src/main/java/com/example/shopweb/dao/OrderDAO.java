@@ -17,7 +17,7 @@ public class OrderDAO {
         String insertOrder = "INSERT INTO orders (user_id, total_amount, shipping_fee, status, address, phone) " +
                 "VALUES (?, ?, ?, ?, ?, ?)";
 
-        // Try variant_id first (new schema), fallback to product_id (legacy schema).
+
         String insertItemNew = "INSERT INTO order_items (order_id, variant_id, quantity, price) " +
                 "VALUES (?, ?, ?, ?)";
         String insertItemOld = "INSERT INTO order_items (order_id, product_id, quantity, price) " +
@@ -28,7 +28,7 @@ public class OrderDAO {
             conn = DBConnection.getConnection();
             conn.setAutoCommit(false);
 
-            // Step 1: create order and read generated orderId.
+
             int orderId;
             try (PreparedStatement psOrder = conn.prepareStatement(
                     insertOrder, Statement.RETURN_GENERATED_KEYS)) {
@@ -48,7 +48,7 @@ public class OrderDAO {
                 }
             }
 
-            // Step 2: insert order items with fallback strategy.
+
             try {
                 insertItems(conn, insertItemNew, orderId, items, true);
             } catch (SQLException e) {
@@ -91,8 +91,8 @@ public class OrderDAO {
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             for (CartItem item : items) {
                 ps.setInt(1, orderId);
-                // useVariantId=true -> variantId (new schema)
-                // useVariantId=false -> productId (legacy schema)
+
+
                 ps.setInt(2, useVariantId ? item.getVariantId() : item.getProductId());
                 ps.setInt(3, item.getQuantity());
                 ps.setDouble(4, item.getPrice());

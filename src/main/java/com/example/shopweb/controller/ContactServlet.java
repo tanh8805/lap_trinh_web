@@ -24,7 +24,7 @@ public class ContactServlet extends HttpServlet {
         String phone = request.getParameter("phone");
         String message = request.getParameter("message");
 
-        System.out.println(name + " - " + email); // debug
+        System.out.println(name + " - " + email);
 
         Contact contact = new Contact();
         contact.setName(name);

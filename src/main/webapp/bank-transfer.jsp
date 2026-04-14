@@ -8,9 +8,9 @@
         return;
     }
 
-    String bankId = "970415"; // ví dụ VietinBank
-    String accountNo = "113366668888"; // thay bằng STK của bạn
-    String accountName = "NGUYEN VAN A"; // thay bằng tên tài khoản, không dấu, viết hoa
+    String bankId = "970415";
+    String accountNo = "113366668888";
+    String accountName = "NGUYEN VAN A";
 
     String qrUrl = "https://img.vietqr.io/image/"
             + bankId + "-" + accountNo + "-compact2.png"

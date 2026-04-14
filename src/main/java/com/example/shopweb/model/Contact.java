@@ -10,7 +10,7 @@ public class Contact {
 
     public Contact() {}
 
-    // ✅ THÊM ĐOẠN NÀY (bạn đang thiếu)
+
     public int getId() {
         return id;
     }
@@ -19,7 +19,7 @@ public class Contact {
         this.id = id;
     }
 
-    // ===== các field còn lại =====
+
     public String getName() {
         return name;
     }

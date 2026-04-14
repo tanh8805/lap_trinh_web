@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class AdminProductDAO {
 
-    // ===== LẤY TẤT CẢ SẢN PHẨM =====
+
     public List<Product> getAllProducts() {
         List<Product> list = new ArrayList<>();
         String sql = "SELECT p.id, p.name, p.description, p.image_url, " +
@@ -46,7 +46,7 @@ public class AdminProductDAO {
         return list;
     }
 
-    // ===== LẤY 1 SẢN PHẨM THEO ID =====
+
     public Product getProductById(int id) {
         String sql = "SELECT p.id, p.name, p.description, p.image_url, " +
                      "p.category_id, c.name AS category_name " +
@@ -67,7 +67,7 @@ public class AdminProductDAO {
                     p.setImageUrl(rs.getString("image_url"));
                     p.setCategoryId(rs.getInt("category_id"));
                     p.setCategoryName(rs.getString("category_name"));
-                    // Lấy danh sách variants (size, price, stock) để hiển thị khi sửa
+
                     p.setVariants(getVariantsByProductId(id));
                     return p;
                 }
@@ -79,7 +79,7 @@ public class AdminProductDAO {
         return null;
     }
 
-    // ===== THÊM SẢN PHẨM =====
+
     public int insertProduct(String name, String description,
                          String imageUrl, int categoryId) {
 
@@ -97,7 +97,7 @@ public class AdminProductDAO {
 
         ResultSet rs = ps.getGeneratedKeys();
         if (rs.next()) {
-            return rs.getInt(1); // 👉 LẤY product_id
+            return rs.getInt(1);
         }
 
     } catch (SQLException e) {
@@ -106,7 +106,7 @@ public class AdminProductDAO {
     return -1;
 }
 
-    // ===== SỬA SẢN PHẨM =====
+
     public boolean updateProduct(int id, String name, String description,
                                   String imageUrl, int categoryId) {
         String sql = "UPDATE products SET name = ?, description = ?, " +
@@ -128,14 +128,14 @@ public class AdminProductDAO {
         return false;
     }
 
-    // ===== XÓA SẢN PHẨM =====
-    // Xóa variants trước (FK constraint), sau đó xóa product
+
+
     public boolean deleteProduct(int id) {
         String deleteVariants = "DELETE FROM product_variants WHERE product_id = ?";
         String deleteProduct  = "DELETE FROM products WHERE id = ?";
 
         try (Connection conn = DBConnection.getConnection()) {
-            // Dùng transaction đảm bảo 2 lệnh DELETE là nguyên tử
+
             conn.setAutoCommit(false);
 
             try (PreparedStatement ps1 = conn.prepareStatement(deleteVariants);
@@ -161,7 +161,7 @@ public class AdminProductDAO {
         return false;
     }
 
-    // ===== LẤY DANH SÁCH CATEGORIES =====
+
     public List<String[]> getAllCategories() {
         List<String[]> list = new ArrayList<>();
         String sql = "SELECT id, name FROM categories ORDER BY name";
@@ -234,7 +234,7 @@ public class AdminProductDAO {
         }
         return false;
     }
-    // ===== UPDATE VARIANT =====
+
 
     public boolean updateVariant(int variantId, String size, double price, int stock) {
         String sql = "UPDATE product_variants SET size = ?, price = ?, stock_quantity = ? WHERE id = ?";
@@ -254,7 +254,7 @@ public class AdminProductDAO {
         return false;
     }
 
-// ===== DELETE VARIANTS NOT IN LIST =====
+
     public boolean deleteVariantsNotInList(int productId, List<Integer> variantIds) {
         if (variantIds.isEmpty()) {
             return deleteVariantsByProductId(productId);

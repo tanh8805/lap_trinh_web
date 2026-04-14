@@ -82,7 +82,7 @@ public class UserDAO {
             e.printStackTrace();
         }
  
-        return null; // Sai username hoặc password
+        return null;
     }
 
     public User getUserById(int id) {

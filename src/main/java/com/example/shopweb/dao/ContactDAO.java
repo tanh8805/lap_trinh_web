@@ -11,9 +11,9 @@ import java.util.List;
 
 public class ContactDAO {
 
-    // =========================
-    // 🔹 INSERT CONTACT
-    // =========================
+
+
+
     public boolean insertContact(Contact contact) {
         String sql = "INSERT INTO contacts(name, email, phone, message) VALUES (?, ?, ?, ?)";
 
@@ -36,9 +36,9 @@ public class ContactDAO {
         return false;
     }
 
-    // =========================
-    // 🔹 GET ALL CONTACTS
-    // =========================
+
+
+
     public List<Contact> getAllContacts() {
         List<Contact> list = new ArrayList<>();
 

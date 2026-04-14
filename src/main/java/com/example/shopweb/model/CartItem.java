@@ -13,12 +13,12 @@ public class CartItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private int    variantId;   // ID của product_variants — key định danh duy nhất
+    private int    variantId;
     private int    productId;
     private String name;
     private String imageUrl;
-    private String size;        // Size đã chọn (S, M, L, XL...)
-    private double price;       // Giá tại thời điểm thêm vào giỏ (từ variant)
+    private String size;
+    private double price;
     private int    quantity;
 
     public CartItem() {}

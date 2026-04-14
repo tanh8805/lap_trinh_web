@@ -10,10 +10,10 @@ public class Product {
     private String description;
     private String imageUrl;
     private int categoryId;
-    private double displayPrice; // Giá hiển thị (thấp nhất từ các variant)
-    private String categoryName; // Tên danh mục để hiển thị và lọc client-side
-    private List<String> sizes; // Danh sách size còn hàng để lọc client-side
-    private List<String[]> variants; // Danh sách variant cho màn admin (id, size, price, stock)
+    private double displayPrice;
+    private String categoryName;
+    private List<String> sizes;
+    private List<String[]> variants;
     private Map<String, Double> variantPrices;
 
     public Product() {

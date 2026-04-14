@@ -209,7 +209,7 @@
 </footer>
 
 <script>
-    // ===== Đọc số lượng sản phẩm trong giỏ từ server session =====
+
     function updateCartBadge() {
         fetch('<%= request.getContextPath() %>/cart?action=count')
             .then(function(r) { return r.json(); })

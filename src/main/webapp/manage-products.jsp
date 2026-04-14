@@ -360,7 +360,7 @@
 </div>
 
 <script>
-    // Preview ảnh khi nhập URL
+
     function previewImage(url) {
         var preview = document.getElementById('imgPreview');
         if (url && url.trim() !== '') {
@@ -371,13 +371,13 @@
         }
     }
 
-    // Hiện preview nếu đang sửa và đã có URL sẵn
+
     window.addEventListener('load', function() {
         var urlInput = document.getElementById('imageUrl');
         if (urlInput && urlInput.value) previewImage(urlInput.value);
     });
 
-    // Xác nhận xóa trước khi thực hiện
+
     function confirmDelete(id, name) {
         if (confirm('Xóa "' + name + '"?\nThao tác này không thể hoàn tác!')) {
             window.location.href = '<%= request.getContextPath() %>/manage-products?action=delete&id=' + id;

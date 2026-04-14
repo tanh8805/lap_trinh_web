@@ -52,7 +52,7 @@ public class LoginServlet extends HttpServlet {
 
         if (user != null) {
 
-            // ===== LẤY SESSION CŨ =====
+
             HttpSession oldSession = request.getSession(false);
 
             List<CartItem> oldCart = null;
@@ -64,17 +64,17 @@ public class LoginServlet extends HttpServlet {
                 oldSession.invalidate();
             }
 
-            // ===== TẠO SESSION MỚI =====
+
             HttpSession newSession = request.getSession(true);
             newSession.setAttribute("loggedInUser", user);
             newSession.setMaxInactiveInterval(30 * 60);
 
-            // ===== KHÔI PHỤC GIỎ HÀNG =====
+
             if (oldCart != null) {
                 newSession.setAttribute("cart", oldCart);
             }
 
-            // ===== ƯU TIÊN redirect từ URL =====
+
             String redirect = request.getParameter("redirect");
 
             if (!user.isAdmin() && redirect != null && !redirect.isEmpty()) {
@@ -82,13 +82,13 @@ public class LoginServlet extends HttpServlet {
                 return;
             }
 
-            // ===== FALLBACK redirect từ session =====
+
             if (!user.isAdmin() && redirectAfterLogin != null && !redirectAfterLogin.isEmpty()) {
                 response.sendRedirect(redirectAfterLogin);
                 return;
             }
 
-            // ===== DEFAULT =====
+
             if (user.isAdmin()) {
                 response.sendRedirect(request.getContextPath() + "/admin");
             } else {

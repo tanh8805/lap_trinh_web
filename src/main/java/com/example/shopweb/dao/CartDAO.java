@@ -43,7 +43,7 @@ public class CartDAO {
                         rs.getString("image_url"),
                         rs.getString("size"),
                         rs.getDouble("price"),
-                        0 // quantity chưa xác định ở bước này
+                        0
                     );
                     variants.add(item);
                 }
@@ -80,7 +80,7 @@ public class CartDAO {
                         rs.getString("image_url"),
                         rs.getString("size"),
                         rs.getDouble("price"),
-                        1 // mặc định thêm 1 cái
+                        1
                     );
                 }
             }

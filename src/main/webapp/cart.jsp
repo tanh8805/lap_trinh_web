@@ -425,12 +425,12 @@
 </div>
 
 <script>
-    // =================================================================
-    //  1. Checkbox chon san pham -> cap nhat tom tat don hang realtime
-    //  2. Voucher hardcode client-side
-    //  3. Checkout: validate -> submit form len CartServlet
-    //  Gia moi dong lay tu data-subtotal (server da tinh price * qty)
-    // =================================================================
+
+
+
+
+
+
 
     var VOUCHERS = {
         'GIAM10':   { type: 'percent', value: 10,    minOrder: 0,      desc: 'Giảm 10%' },
@@ -449,7 +449,7 @@
         return document.querySelectorAll('.row-check');
     }
 
-    // Cap nhat toan bo phan tom tat don hang
+
     function updateSummary() {
         var checkboxes  = getRowCheckboxes();
         var subtotal    = 0;
@@ -460,10 +460,10 @@
             var idx = parseInt(cb.dataset.index);
             var row = document.getElementById('row-' + idx);
             if (cb.checked) {
-                // Lay gia tu data-subtotal (server da render san: price * quantity)
+
                 subtotal += parseFloat(cb.dataset.subtotal) || 0;
                 totalQty++;
-                // Dung variantId (khong phai productId) de truyen len CartServlet
+
                 selectedIds.push(cb.dataset.variantId);
                 if (row) row.classList.add('selected');
             } else {
@@ -471,7 +471,7 @@
             }
         });
 
-        // Tinh giam gia tu voucher
+
         var discount = 0;
         if (appliedVoucher && subtotal >= appliedVoucher.minOrder) {
             discount = appliedVoucher.type === 'percent'
@@ -481,14 +481,14 @@
 
         var total = subtotal - discount;
 
-        // Cap nhat DOM
+
         document.getElementById('selectedCount').textContent   = totalQty;
         document.getElementById('displaySubtotal').textContent = formatVND(subtotal);
         document.getElementById('displayTotal').textContent    = formatVND(total > 0 ? total : 0);
         document.getElementById('selectedSummary').textContent =
             totalQty + ' / ' + checkboxes.length + ' loại được chọn';
 
-        // Dong giam gia
+
         var discRow = document.getElementById('discountRow');
         if (discount > 0) {
             discRow.style.display = 'flex';
@@ -498,7 +498,7 @@
             discRow.style.display = 'none';
         }
 
-        // Dien vao hidden inputs de gui len server
+
         document.getElementById('hiddenDiscount').value    = discount;
         document.getElementById('hiddenVoucherCode').value = appliedVoucher ? appliedVoucher.code : '';
         var selectedIdsContainer = document.getElementById('selectedIdsContainer');
@@ -512,11 +512,11 @@ selectedIds.forEach(function(id) {
     selectedIdsContainer.appendChild(input);
 });
 
-        // Enable/disable nut checkout
+
         var btn = document.getElementById('btnCheckout');
         if (btn) btn.disabled = (totalQty === 0);
 
-        // Dong bo "chon tat ca"
+
         var checkAll = document.getElementById('checkAll');
         if (checkAll) {
             var checked = document.querySelectorAll('.row-check:checked');
@@ -525,12 +525,12 @@ selectedIds.forEach(function(id) {
         }
     }
 
-    // Gan event cho tung checkbox dong
+
     getRowCheckboxes().forEach(function(cb) {
         cb.addEventListener('change', updateSummary);
     });
 
-    // Checkbox "chon tat ca"
+
     var checkAllEl = document.getElementById('checkAll');
     if (checkAllEl) {
         checkAllEl.addEventListener('change', function() {
@@ -539,7 +539,7 @@ selectedIds.forEach(function(id) {
         });
     }
 
-    // Nut thanh toan
+
     var btnCheckout = document.getElementById('btnCheckout');
     if (btnCheckout) {
         btnCheckout.addEventListener('click', function() {
@@ -550,21 +550,21 @@ selectedIds.forEach(function(id) {
             }
             document.getElementById('warnSelect').style.display = 'none';
 
-            // Luu variantId cua cac o KHONG duoc check vao sessionStorage
-            // De sau khi trang reload (orderSuccess), cac o nay van bi bo tick
-            // (cac o duoc check se bien mat khoi gio sau checkout)
+
+
+
             var uncheckedIds = [];
             document.querySelectorAll('.row-check:not(:checked)').forEach(function(cb) {
                 uncheckedIds.push(cb.dataset.variantId);
             });
-            // Dung key rieng de phan biet voi key cua +/- button
+
             sessionStorage.setItem('cart_uncheck_after_order', JSON.stringify(uncheckedIds));
 
             document.getElementById('checkoutForm').submit();
         });
     }
 
-    // Áp dụng voucher
+
     document.getElementById('btnApplyVoucher').addEventListener('click', function() {
         var code = document.getElementById('voucherInput').value.trim().toUpperCase();
         if (!code) { showVoucherMsg('Vui lòng nhập mã voucher.', 'err'); return; }
@@ -572,7 +572,7 @@ selectedIds.forEach(function(id) {
         var v = VOUCHERS[code];
         if (!v) { showVoucherMsg('Mã không hợp lệ.', 'err'); return; }
 
-        // Tinh subtotal hien tai cua cac san pham dang chon
+
         var sub = 0;
         document.querySelectorAll('.row-check:checked').forEach(function(cb) {
             sub += parseFloat(cb.dataset.subtotal) || 0;
@@ -592,7 +592,7 @@ selectedIds.forEach(function(id) {
         updateSummary();
     });
 
-    // Bo voucher
+
     document.getElementById('btnRemoveVoucher').addEventListener('click', function() {
         appliedVoucher = null;
         document.getElementById('voucherInput').value    = '';
@@ -610,23 +610,23 @@ selectedIds.forEach(function(id) {
         el.className   = 'voucher-msg ' + cls;
     }
 
-    // =================================================================
-    //  GIU TRANG THAI CHECKBOX QUA CAC LAN RELOAD (khi bam +/-)
-    //  Truoc khi form qty submit -> luu productId cua cac o duoc check
-    //  vao sessionStorage. Sau khi trang tai lai -> khoi phuc lai.
-    // =================================================================
+
+
+
+
+
     var STORAGE_KEY = 'cart_checked_ids';
 
-    // Khoi phuc trang thai checkbox tu sessionStorage (neu co)
+
     function restoreCheckboxState() {
-        // Uu tien: kiem tra key tu checkout (san pham nao KHONG duoc chon)
+
         var uncheckedRaw = sessionStorage.getItem('cart_uncheck_after_order');
         if (uncheckedRaw) {
             sessionStorage.removeItem('cart_uncheck_after_order');
             try {
                 var uncheckedIds = JSON.parse(uncheckedRaw);
                 getRowCheckboxes().forEach(function(cb) {
-                    // Neu variantId nay nam trong danh sach "khong chon" -> uncheck
+
                     cb.checked = uncheckedIds.indexOf(cb.dataset.variantId) === -1;
                 });
             } catch (e) { /* mac dinh tat ca check */ }
@@ -634,10 +634,10 @@ selectedIds.forEach(function(id) {
             return;
         }
 
-        // Key tu nut +/-: danh sach variantId DUOC check
+
         var raw = sessionStorage.getItem(STORAGE_KEY);
         if (!raw) {
-            // Lan dau vao trang: mac dinh bo tick het
+
             getRowCheckboxes().forEach(function(cb) { cb.checked = false; });
             updateSummary();
             return;
@@ -654,33 +654,33 @@ selectedIds.forEach(function(id) {
         updateSummary();
     }
 
-    // Truoc khi form +/- submit: luu trang thai checkbox hien tai
+
     document.querySelectorAll('.qty-form button[type="submit"]').forEach(function(btn) {
         btn.addEventListener('click', function() {
             var checkedIds = [];
             document.querySelectorAll('.row-check:checked').forEach(function(cb) {
-                // Luu variantId de khoi phuc dung checkbox sau reload
+
                 checkedIds.push(cb.dataset.variantId);
             });
             sessionStorage.setItem(STORAGE_KEY, JSON.stringify(checkedIds));
         });
     });
 
-    // Truoc khi form xoa san pham submit: xoa luon storage de khoi phuc sach
+
     document.querySelectorAll('.btn-remove').forEach(function(btn) {
         btn.addEventListener('click', function() {
             sessionStorage.removeItem(STORAGE_KEY);
         });
     });
 
-    // Khoi chay: khoi phuc trang thai (hoac mac dinh neu lan dau)
+
     restoreCheckboxState();
 
-    // =================================================================
-    //  DOI SIZE TRONG GIO HANG
-    //  Bam vao badge size -> mo popup -> chon size moi -> POST len server
-    //  Server: cap nhat variantId moi trong session (doi size = doi variant)
-    // =================================================================
+
+
+
+
+
     var changeSizeProductId  = null;
     var changeSizeOldVariant = null;
     var changeSizeNewVariant = null;
@@ -691,7 +691,7 @@ selectedIds.forEach(function(id) {
             changeSizeProductId  = btn.dataset.productId;
             changeSizeNewVariant = null;
 
-            // Reset popup
+
             var modal = document.getElementById('changeSizeModal');
             document.getElementById('csModalTitle').textContent =
                 'Đổi size (đang chọn: ' + (btn.dataset.currentSize || '-') + ')';
@@ -702,7 +702,7 @@ selectedIds.forEach(function(id) {
             document.getElementById('btnConfirmChange').style.opacity = '0.4';
             modal.style.display = 'flex';
 
-            // Lay danh sach variant cua san pham nay
+
             fetch('<%= request.getContextPath() %>/cart?action=variants&productId=' + changeSizeProductId, {
                 credentials: 'same-origin'
             })
@@ -714,7 +714,7 @@ selectedIds.forEach(function(id) {
                     document.getElementById('csError').style.display = 'block';
                     return;
                 }
-                // Render cac nut size
+
                 var container = document.getElementById('csSizeList');
                 data.variants.forEach(function(v) {
                     var b = document.createElement('button');
@@ -745,7 +745,7 @@ selectedIds.forEach(function(id) {
                     });
                     container.appendChild(b);
                 });
-                // Enable confirm ngay neu da chon size (chon lai size hien tai cung ok)
+
                 document.getElementById('btnConfirmChange').disabled = (changeSizeNewVariant === null);
                 document.getElementById('btnConfirmChange').style.opacity =
                     changeSizeNewVariant ? '1' : '0.4';
@@ -758,7 +758,7 @@ selectedIds.forEach(function(id) {
         });
     });
 
-    // Dong popup doi size
+
     document.getElementById('btnCloseChangeSize').addEventListener('click', function() {
         document.getElementById('changeSizeModal').style.display = 'none';
     });
@@ -766,18 +766,18 @@ selectedIds.forEach(function(id) {
         if (e.target === this) this.style.display = 'none';
     });
 
-    // Xac nhan doi size
+
     document.getElementById('btnConfirmChange').addEventListener('click', function() {
         if (!changeSizeNewVariant || !changeSizeOldVariant) return;
 
-        // Neu chon lai size cu -> dong popup, khong lam gi
+
         if (changeSizeNewVariant === String(changeSizeOldVariant)) {
             document.getElementById('changeSizeModal').style.display = 'none';
             return;
         }
 
-        // POST: remove old variant, add new variant
-        // Lam tuan tu: remove truoc -> add sau
+
+
         var confirmBtn = this;
         confirmBtn.textContent = 'Đang cập nhật...';
         confirmBtn.disabled = true;
@@ -794,7 +794,7 @@ selectedIds.forEach(function(id) {
         .then(function(r) { return r.json(); })
         .then(function(data) {
             if (data.status === 'ok') {
-                // Kiem tra item vua doi size co dang duoc check khong
+
                 var wasChecked = false;
                 document.querySelectorAll('.row-check').forEach(function(cb) {
                     if (cb.dataset.variantId === String(changeSizeOldVariant)) {
@@ -802,8 +802,8 @@ selectedIds.forEach(function(id) {
                     }
                 });
 
-                // Giu nguyen trang thai checked cua tat ca item hien tai,
-                // ngoai tru item vua doi size (dung oldVariantId de loai no ra)
+
+
                 var checkedIds = [];
                 document.querySelectorAll('.row-check:checked').forEach(function(cb) {
                     if (cb.dataset.variantId !== String(changeSizeOldVariant)) {
@@ -811,7 +811,7 @@ selectedIds.forEach(function(id) {
                     }
                 });
 
-                // Chi them newVariantId vao checked neu item cu dang duoc check
+
                 if (wasChecked) {
                     checkedIds.push(String(changeSizeNewVariant));
                 }

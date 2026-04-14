@@ -23,7 +23,7 @@ public class ProductServlet extends HttpServlet {
 
         List<Product> productList = productDAO.getAllProducts();
 
-        // Lấy danh sách tên danh mục duy nhất, đã sắp xếp, để render dropdown filter
+
         List<String> categories = productList.stream()
                 .map(Product::getCategoryName)
                 .filter(c -> c != null && !c.isEmpty())

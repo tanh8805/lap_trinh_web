@@ -49,12 +49,12 @@ public class ManageProductServlet extends HttpServlet {
         switch (action) {
 
             case "edit":
-                // Load form sửa với dữ liệu sản phẩm hiện tại
+
                 try {
                     int id = Integer.parseInt(request.getParameter("id"));
                     Product product = productDAO.getProductById(id);
 
-                    // 👉 LOAD VARIANTS
+
                     product.setVariants(productDAO.getVariantsByProductId(id));
                     if (product == null) {
                         response.sendRedirect(request.getContextPath() + "/manage-products");
@@ -65,7 +65,7 @@ public class ManageProductServlet extends HttpServlet {
                     response.sendRedirect(request.getContextPath() + "/manage-products");
                     return;
                 }
-                // Tiếp tục load danh sách + categories
+
                 request.setAttribute("productList", productDAO.getAllProducts());
                 request.setAttribute("categories", productDAO.getAllCategories());
                 request.setAttribute("action", "edit");
@@ -73,7 +73,7 @@ public class ManageProductServlet extends HttpServlet {
                 break;
 
             case "delete":
-                // Xóa sản phẩm rồi redirect về danh sách
+
                 try {
                     int id = Integer.parseInt(request.getParameter("id"));
                     productDAO.deleteProduct(id);
@@ -82,7 +82,7 @@ public class ManageProductServlet extends HttpServlet {
                 break;
 
             default:
-                // Danh sách + form thêm mới
+
                 request.setAttribute("productList", productDAO.getAllProducts());
                 request.setAttribute("categories", productDAO.getAllCategories());
                 request.setAttribute("action", "list");
@@ -163,7 +163,7 @@ public class ManageProductServlet extends HttpServlet {
 
                 if (sizes != null) {
                     for (int i = 0; i < sizes.length; i++) {
-                        // ✅ Kiểm tra null và bounds
+
                         String size = (sizes[i] != null) ? sizes[i].trim() : "";
                         if (!size.isEmpty()) {
                             double price = 0;

@@ -18,7 +18,7 @@ public class ProductDetailServlet extends HttpServlet {
             throws ServletException, IOException {
 
         try {
-            // 1. Lấy id từ URL
+
             String idParam = request.getParameter("id");
 
             if (idParam == null || idParam.isEmpty()) {
@@ -28,7 +28,7 @@ public class ProductDetailServlet extends HttpServlet {
 
             int id = Integer.parseInt(idParam);
 
-            // 2. Lấy dữ liệu từ DB
+
             Product product = productDAO.getProductById(id);
 
             if (product == null) {
@@ -36,15 +36,15 @@ public class ProductDetailServlet extends HttpServlet {
                 return;
             }
 
-            // 3. Gửi sang JSP
+
             request.setAttribute("product", product);
 
-            // 4. Forward
+
             request.getRequestDispatcher("/product-detail.jsp")
                    .forward(request, response);
 
         } catch (NumberFormatException e) {
-            // id không hợp lệ
+
             response.sendRedirect(request.getContextPath() + "/products");
         } catch (Exception e) {
             e.printStackTrace();

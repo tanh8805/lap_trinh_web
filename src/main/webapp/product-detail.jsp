@@ -314,13 +314,13 @@
                         <script>
                             var selectedSize = null;
 
-                            // ✅ FIX: Dùng variantPricesJson (String) thay vì vJson (StringBuilder)
+
                             var variantPrices = <%= variantPricesJson %>;
                             var variantIdBySize = {};
                             var productId = <%= product.getId() %>;
                             var productName = '<%= product.getName().replace("'", "\\'") %>';
 
-                            // Tải danh sách variant để gửi đúng variantId khi thêm vào giỏ
+
                             fetch('<%= contextPath %>/cart?action=variants&productId=' + productId)
                                 .then(function (res) { return res.json(); })
                                 .then(function (data) {
@@ -333,7 +333,7 @@
                                 })
                                 .catch(function () { });
 
-                            // ===== CHỌN SIZE — cập nhật giá theo size =====
+
                             document.querySelectorAll('.size-btn').forEach(function (btn) {
                                 btn.addEventListener('click', function () {
                                     document.querySelectorAll('.size-btn').forEach(function (b) {
@@ -349,7 +349,7 @@
                                 });
                             });
 
-                            // ===== TĂNG / GIẢM SỐ LƯỢNG =====
+
                             function increase() {
                                 var qty = document.getElementById('quantity');
                                 qty.value = parseInt(qty.value) + 1;
@@ -360,7 +360,7 @@
                                 if (parseInt(qty.value) > 1) qty.value = parseInt(qty.value) - 1;
                             }
 
-                            // ===== THÊM VÀO GIỎ =====
+
                             function addToCart() {
                                 if (!selectedSize) { alert('Vui lòng chọn size!'); return; }
 
@@ -396,7 +396,7 @@
                                     });
                             }
 
-                            // ===== MUA NGAY =====
+
                             function buyNow() {
                                 if (!selectedSize) { alert('Vui lòng chọn size!'); return; }
 
@@ -422,7 +422,7 @@
                                     });
                             }
 
-                            // ===== TOAST =====
+
                             var toastTimer = null;
                             function showToast(message) {
                                 document.getElementById('toast-message').textContent = message;
