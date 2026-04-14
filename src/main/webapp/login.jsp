@@ -93,6 +93,7 @@
 <div class="auth-card">
     <h2>Đăng nhập</h2>
     <form action="login" method="post">
+        <input type="hidden" name="redirect" value="<%= request.getParameter("redirect") != null ? request.getParameter("redirect") : "" %>">
         <div class="form-group">
             <label for="username">Tên đăng nhập</label>
             <input type="text" id="username" name="username" placeholder="Nhập username..." required>

@@ -197,12 +197,13 @@
         <h2>Thanh toán</h2>
 
         <% if ("missing_info".equals(error)) { %>
-            <div class="error-box">Vui lòng nhập đầy đủ số điện thoại và địa chỉ.</div>
+    <div class="error-box">Vui lòng nhập đầy đủ số điện thoại và địa chỉ.</div>
+        <% } else if ("invalid_info".equals(error)) { %>
+        <div class="error-box">Thông tin không hợp lệ. Số điện thoại phải gồm 10 số bắt đầu bằng 0, và địa chỉ phải đúng độ dài yêu cầu.</div>
         <% } else if ("order_failed".equals(error)) { %>
-            <div class="error-box">Đặt hàng thất bại. Vui lòng thử lại.</div>
-        <% } %>
-
-        <form action="<%=request.getContextPath()%>/cart?action=checkout" method="post">
+        <div class="error-box">Đặt hàng thất bại. Vui lòng thử lại.</div>
+    <% } %>
+        <form id="checkoutForm" action="<%=request.getContextPath()%>/cart?action=checkout" method="post">
             <% for (CartItem item : selectedItems) { %>
                 <input type="hidden" name="selectedIds" value="<%=item.getVariantId()%>">
             <% } %>
@@ -290,6 +291,20 @@
         </div>
     </div>
 </div>
+<script>
+document.getElementById("checkoutForm").addEventListener("submit", function(e) {
+    var isLoggedIn = <%= (session.getAttribute("loggedInUser") != null) %>;
 
+    if (!isLoggedIn) {
+        e.preventDefault();
+
+        alert("Vui lòng đăng ký hoặc đăng nhập để tiếp tục thanh toán!");
+
+        var currentUrl = window.location.href;
+        window.location.href = "<%=request.getContextPath()%>/login?redirect=" + encodeURIComponent(currentUrl);
+    }
+});
+</script>
 </body>
+
 </html>

@@ -2,14 +2,13 @@ package com.example.shopweb.controller;
 
 import com.example.shopweb.dao.UserDAO;
 import com.example.shopweb.model.User;
+import com.example.shopweb.model.CartItem;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.*;
 import java.io.IOException;
+import java.util.List;
 
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
@@ -52,15 +51,44 @@ public class LoginServlet extends HttpServlet {
         User user = userDAO.login(username, password);
 
         if (user != null) {
+
+            // ===== LẤY SESSION CŨ =====
             HttpSession oldSession = request.getSession(false);
+
+            List<CartItem> oldCart = null;
+            String redirectAfterLogin = null;
+
             if (oldSession != null) {
+                oldCart = (List<CartItem>) oldSession.getAttribute("cart");
+                redirectAfterLogin = (String) oldSession.getAttribute("redirectAfterLogin");
                 oldSession.invalidate();
             }
 
+            // ===== TẠO SESSION MỚI =====
             HttpSession newSession = request.getSession(true);
             newSession.setAttribute("loggedInUser", user);
-            newSession.setMaxInactiveInterval(30 * 60); // Session tồn tại tối đa 30 phút
+            newSession.setMaxInactiveInterval(30 * 60);
 
+            // ===== KHÔI PHỤC GIỎ HÀNG =====
+            if (oldCart != null) {
+                newSession.setAttribute("cart", oldCart);
+            }
+
+            // ===== ƯU TIÊN redirect từ URL =====
+            String redirect = request.getParameter("redirect");
+
+            if (!user.isAdmin() && redirect != null && !redirect.isEmpty()) {
+                response.sendRedirect(redirect);
+                return;
+            }
+
+            // ===== FALLBACK redirect từ session =====
+            if (!user.isAdmin() && redirectAfterLogin != null && !redirectAfterLogin.isEmpty()) {
+                response.sendRedirect(redirectAfterLogin);
+                return;
+            }
+
+            // ===== DEFAULT =====
             if (user.isAdmin()) {
                 response.sendRedirect(request.getContextPath() + "/admin");
             } else {
@@ -69,7 +97,7 @@ public class LoginServlet extends HttpServlet {
 
         } else {
             request.setAttribute("error", "Tên đăng nhập hoặc mật khẩu không đúng.");
-            request.setAttribute("username", username); 
+            request.setAttribute("username", username);
             request.getRequestDispatcher("/login.jsp").forward(request, response);
         }
     }
