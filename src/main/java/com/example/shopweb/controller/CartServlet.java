@@ -140,7 +140,6 @@ public class CartServlet extends HttpServlet {
         boolean found = false;
         for (CartItem item : cart) {
             if (item.getVariantId() == variantId) {
-                // Cộng dồn số lượng được chọn vào số lượng hiện có
                 item.setQuantity(item.getQuantity() + quantity);
                 found = true;
                 break;
@@ -152,6 +151,17 @@ public class CartServlet extends HttpServlet {
         }
 
         session.setAttribute(SESSION_CART, cart);
+
+        // Sync xuong DB neu da dang nhap
+        int userId = getLoggedInUserId(session);
+        if (userId > 0) {
+            for (CartItem item : cart) {
+                if (item.getVariantId() == variantId) {
+                    cartDAO.upsertItem(userId, variantId, item.getQuantity());
+                    break;
+                }
+            }
+        }
 
         String accept = request.getHeader("Accept");
         boolean isFetch = accept != null && !accept.contains("text/html");
@@ -177,16 +187,32 @@ public class CartServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         List<CartItem> cart = getCartFromSession(session);
 
+        // ===== FIX BUG 3: Không xóa item trong vòng lặp for-each =====
+        CartItem toRemove = null;
+        int finalQty = 0;
+
         for (CartItem item : cart) {
             if (item.getVariantId() == variantId) {
                 int newQty = item.getQuantity() + delta;
-                if (newQty <= 0)
-                    cart.remove(item);
-                else
+                if (newQty <= 0) {
+                    toRemove = item; // đánh dấu xóa, không xóa ngay trong loop
+                } else {
                     item.setQuantity(newQty);
+                    finalQty = newQty;
+                }
                 break;
             }
         }
+
+        // Xử lý sau khi thoát vòng lặp
+        int userId = getLoggedInUserId(session);
+        if (toRemove != null) {
+            cart.remove(toRemove);
+            if (userId > 0) cartDAO.removeItem(userId, variantId);
+        } else if (finalQty > 0) {
+            if (userId > 0) cartDAO.upsertItem(userId, variantId, finalQty);
+        }
+        // ===== END FIX =====
 
         if (session != null)
             session.setAttribute(SESSION_CART, cart);
@@ -201,6 +227,10 @@ public class CartServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         List<CartItem> cart = getCartFromSession(session);
         cart.removeIf(item -> item.getVariantId() == variantId);
+
+        // Xoa khoi DB
+        int userId = getLoggedInUserId(session);
+        if (userId > 0) cartDAO.removeItem(userId, variantId);
         if (session != null)
             session.setAttribute(SESSION_CART, cart);
         response.sendRedirect(request.getContextPath() + "/cart");
@@ -218,7 +248,6 @@ public class CartServlet extends HttpServlet {
             return;
         }
         if (oldVariantId == newVariantId) {
-            // Chon lai size cu, khong can lam gi
             sendJsonResult(response, true, null);
             return;
         }
@@ -259,6 +288,19 @@ public class CartServlet extends HttpServlet {
 
         if (session != null)
             session.setAttribute(SESSION_CART, cart);
+
+        // Sync xuong DB neu da dang nhap
+        int userId = getLoggedInUserId(session);
+        if (userId > 0) {
+            cartDAO.removeItem(userId, oldVariantId);
+            for (CartItem item : cart) {
+                if (item.getVariantId() == newVariantId) {
+                    cartDAO.upsertItem(userId, newVariantId, item.getQuantity());
+                    break;
+                }
+            }
+        }
+
         sendJsonResult(response, true, null);
     }
 
@@ -341,9 +383,9 @@ public class CartServlet extends HttpServlet {
             errorRedirect.append("&district=").append(java.net.URLEncoder.encode(district, "UTF-8"));
             errorRedirect.append("&address=").append(java.net.URLEncoder.encode(address, "UTF-8"));
             errorRedirect.append("&shippingMethod=")
-                    .append(java.net.URLEncoder.encode(shippingMethod == null ? "standard" : shippingMethod, "UTF-8"));
+                    .append(java.net.URLEncoder.encode(shippingMethod, "UTF-8"));
             errorRedirect.append("&paymentMethod=")
-                    .append(java.net.URLEncoder.encode(paymentMethod == null ? "cod" : paymentMethod, "UTF-8"));
+                    .append(java.net.URLEncoder.encode(paymentMethod, "UTF-8"));
             errorRedirect.append("&discountAmount=")
                     .append(java.net.URLEncoder.encode(discountAmountStr == null ? "0" : discountAmountStr, "UTF-8"));
 
@@ -369,9 +411,9 @@ public class CartServlet extends HttpServlet {
             errorRedirect.append("&district=").append(java.net.URLEncoder.encode(district, "UTF-8"));
             errorRedirect.append("&address=").append(java.net.URLEncoder.encode(address, "UTF-8"));
             errorRedirect.append("&shippingMethod=")
-                    .append(java.net.URLEncoder.encode(shippingMethod == null ? "standard" : shippingMethod, "UTF-8"));
+                    .append(java.net.URLEncoder.encode(shippingMethod, "UTF-8"));
             errorRedirect.append("&paymentMethod=")
-                    .append(java.net.URLEncoder.encode(paymentMethod == null ? "cod" : paymentMethod, "UTF-8"));
+                    .append(java.net.URLEncoder.encode(paymentMethod, "UTF-8"));
             errorRedirect.append("&discountAmount=")
                     .append(java.net.URLEncoder.encode(discountAmountStr == null ? "0" : discountAmountStr, "UTF-8"));
 
@@ -433,8 +475,8 @@ public class CartServlet extends HttpServlet {
                 + (city != null && !city.trim().isEmpty() ? ", " + city : "");
 
         // ===== 8. LƯU DB =====
-        OrderDAO orderDAO = new OrderDAO();
-        boolean orderCreated = orderDAO.createOrder(
+        OrderDAO orderDAOLocal = new OrderDAO();
+        boolean orderCreated = orderDAOLocal.createOrder(
                 loggedInUser.getId(),
                 selectedItems,
                 totalAmount,
@@ -445,6 +487,12 @@ public class CartServlet extends HttpServlet {
         // ===== 9. KẾT QUẢ =====
         if (orderCreated) {
             session.setAttribute("cart", remainingItems);
+
+            // Xoa cac item da checkout khoi DB
+            int userId = loggedInUser.getId();
+            for (CartItem item : selectedItems) {
+                cartDAO.removeItem(userId, item.getVariantId());
+            }
 
             if ("banking".equalsIgnoreCase(paymentMethod)) {
                 session.setAttribute("qrAmount", (long) totalAmount);
@@ -470,13 +518,25 @@ public class CartServlet extends HttpServlet {
         }
     }
 
+    private int getLoggedInUserId(HttpSession session) {
+        if (session == null) return -1;
+        User user = (User) session.getAttribute("loggedInUser");
+        return user != null ? user.getId() : -1;
+    }
+
+    // ===== FIX BUG 2: Gắn list mới vào session ngay khi tạo =====
     @SuppressWarnings("unchecked")
     private List<CartItem> getCartFromSession(HttpSession session) {
         if (session == null)
             return new ArrayList<>();
         List<CartItem> cart = (List<CartItem>) session.getAttribute(SESSION_CART);
-        return cart != null ? cart : new ArrayList<>();
+        if (cart == null) {
+            cart = new ArrayList<>();
+            session.setAttribute(SESSION_CART, cart); // gắn ngay vào session
+        }
+        return cart;
     }
+    // ===== END FIX =====
 
     private int parseIntParam(String p, int def) {
         if (p == null || p.trim().isEmpty())
@@ -506,7 +566,8 @@ public class CartServlet extends HttpServlet {
             try {
                 ids.add(Integer.parseInt(s.trim()));
             } catch (NumberFormatException e) {
-                /* skip */ }
+                /* skip */
+            }
         }
         return ids;
     }
