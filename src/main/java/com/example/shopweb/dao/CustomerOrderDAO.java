@@ -83,6 +83,29 @@ public class CustomerOrderDAO {
         return new ArrayList<>();
     }
 
+    public boolean cancelOrderIfAllowed(int userId, int orderId) {
+        String sql = "UPDATE orders SET status = ? " +
+                "WHERE id = ? AND user_id = ? " +
+                "AND status IN (?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, "Đã huỷ");
+            ps.setInt(2, orderId);
+            ps.setInt(3, userId);
+            ps.setString(4, "PENDING");
+            ps.setString(5, "PENDING_REVIEW");
+            ps.setString(6, "Chờ duyệt");
+            ps.setString(7, "Chờ xử lý");
+            ps.setString(8, "PROCESSING");
+            ps.setString(9, "Đang xử lý");
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     private List<CustomerOrderItem> fetchItems(int orderId, String sql, boolean hasSize)
             throws SQLException {
         List<CustomerOrderItem> items = new ArrayList<>();

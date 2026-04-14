@@ -117,10 +117,51 @@
         }
 
         .status-pending { background: #fff3cd; color: #856404; }
+        .status-processing { background: #ffe8cc; color: #8d4b00; }
         .status-shipping { background: #d1ecf1; color: #0c5460; }
         .status-delivered { background: #d4edda; color: #155724; }
         .status-cancelled { background: #f8d7da; color: #721c24; }
         .status-default { background: #e9ecef; color: #495057; }
+
+        .order-head-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-cancel-order {
+            border: 1px solid #d62828;
+            background: #fff;
+            color: #d62828;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-cancel-order:hover {
+            background: #fff1f1;
+        }
+
+        .alert {
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: #eaf7ed;
+            color: #1f6f3e;
+            border: 1px solid #cdebd7;
+        }
+
+        .alert-error {
+            background: #fdecec;
+            color: #9f1f1f;
+            border: 1px solid #f4c9c9;
+        }
 
         .order-info {
             padding: 14px 20px;
@@ -226,6 +267,8 @@
     List<AdminOrder> orders = (List<AdminOrder>) request.getAttribute("orders");
     Map<Integer, List<CustomerOrderItem>> orderItemsMap =
             (Map<Integer, List<CustomerOrderItem>>) request.getAttribute("orderItemsMap");
+    String success = (String) request.getAttribute("success");
+    String error = (String) request.getAttribute("error");
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 %>
 
@@ -246,6 +289,13 @@
 </div>
 
 <div class="container">
+    <% if (success != null && !success.trim().isEmpty()) { %>
+        <div class="alert alert-success"><%= success %></div>
+    <% } %>
+    <% if (error != null && !error.trim().isEmpty()) { %>
+        <div class="alert alert-error"><%= error %></div>
+    <% } %>
+
     <% if (orders == null || orders.isEmpty()) { %>
         <div class="empty">
             <p>Bạn chưa có đơn hàng nào.</p>
@@ -257,6 +307,8 @@
             String badgeClass = "status-default";
             if ("Chờ duyệt".equals(status)) {
                 badgeClass = "status-pending";
+            } else if ("Đang xử lý".equals(status)) {
+                badgeClass = "status-processing";
             } else if ("Đang giao".equals(status)) {
                 badgeClass = "status-shipping";
             } else if ("Đã giao".equals(status)) {
@@ -264,6 +316,7 @@
             } else if ("Đã huỷ".equals(status)) {
                 badgeClass = "status-cancelled";
             }
+            boolean canCancel = "Chờ duyệt".equals(status) || "Đang xử lý".equals(status);
             List<CustomerOrderItem> items = orderItemsMap != null ? orderItemsMap.get(order.getId()) : null;
         %>
             <div class="order-card">
@@ -274,7 +327,16 @@
                             Đặt lúc: <%= order.getOrderDate() != null ? sdf.format(order.getOrderDate()) : "-" %>
                         </span>
                     </div>
-                    <span class="status-badge <%= badgeClass %>"><%= status %></span>
+                    <div class="order-head-right">
+                        <span class="status-badge <%= badgeClass %>"><%= status %></span>
+                        <% if (canCancel) { %>
+                            <form method="post" action="<%= contextPath %>/orders" onsubmit="return confirm('Bạn có chắc muốn huỷ đơn hàng này không?');">
+                                <input type="hidden" name="action" value="cancel">
+                                <input type="hidden" name="orderId" value="<%= order.getId() %>">
+                                <button type="submit" class="btn-cancel-order">Huỷ đơn</button>
+                            </form>
+                        <% } %>
+                    </div>
                 </div>
 
                 <div class="order-info">

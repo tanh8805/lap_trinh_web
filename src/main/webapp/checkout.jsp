@@ -189,7 +189,7 @@
 }
     </style>
 </head>
-<body>
+<body data-logged-in="<%= (session.getAttribute("loggedInUser") != null) %>">
 
 <div class="checkout-container">
     <div class="checkout-left">
@@ -248,12 +248,26 @@
     <div class="checkout-right">
         <h3>Đơn hàng của bạn</h3>
 
-        <% for (CartItem item : selectedItems) { %>
+        <% for (CartItem item : selectedItems) {
+            String rawImage = item.getImageUrl();
+            String imageSrc = request.getContextPath() + "/images/no-image.jpg";
+            if (rawImage != null && !rawImage.trim().isEmpty()) {
+                String normalizedImage = rawImage.trim();
+                if (normalizedImage.startsWith("http://") || normalizedImage.startsWith("https://") || normalizedImage.startsWith("data:image")) {
+                    imageSrc = normalizedImage;
+                } else if (normalizedImage.startsWith("/")) {
+                    imageSrc = request.getContextPath() + normalizedImage;
+                } else {
+                    imageSrc = request.getContextPath() + "/" + normalizedImage;
+                }
+            }
+        %>
     <div class="product-item">
         <div class="product-info">
-            <img src="<%=request.getContextPath()%>/images/<%=item.getImageUrl()%>"
+            <img src="<%=imageSrc%>"
                  alt="<%=item.getName()%>"
-                 class="product-thumb">
+                 class="product-thumb"
+                 onerror="this.src='<%=request.getContextPath()%>/images/no-image.jpg'">
 
             <div class="product-text">
                 <div><strong><%=item.getName()%></strong></div>
@@ -293,7 +307,7 @@
 </div>
 <script>
 document.getElementById("checkoutForm").addEventListener("submit", function(e) {
-    var isLoggedIn = <%= (session.getAttribute("loggedInUser") != null) %>;
+    var isLoggedIn = document.body.getAttribute("data-logged-in") === "true";
 
     if (!isLoggedIn) {
         e.preventDefault();
