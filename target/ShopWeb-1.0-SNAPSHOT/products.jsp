@@ -451,7 +451,7 @@
 
     function applyFilter() {
         const keyword  = searchInput.value.trim().toLowerCase();
-        const category = categoryFilter.value;
+        const category = categoryFilter.value.trim().toLowerCase();
         const minVal   = parseFloat(priceMin.value) || 0;
         const maxVal   = parseFloat(priceMax.value) || Infinity;
 
@@ -459,7 +459,7 @@
 
         cards.forEach(card => {
             const name      = card.dataset.name;
-            const cat       = card.dataset.category;
+            const cat       = (card.dataset.category || '').trim().toLowerCase();
             const price     = parseFloat(card.dataset.price) || 0;
             const cardSizes = card.dataset.sizes ? card.dataset.sizes.split(',') : [];
 
@@ -499,8 +499,13 @@
         var params = new URLSearchParams(window.location.search);
         var cat = params.get('category');
         if (cat) {
-            // Pre-fill dropdown đúng với category được chọn
-            categoryFilter.value = cat;
+            // Pre-fill dropdown theo so khop khong phan biet hoa/thuong.
+            var target = cat.trim().toLowerCase();
+            Array.from(categoryFilter.options).forEach(function(opt) {
+                if (opt.value && opt.value.trim().toLowerCase() === target) {
+                    categoryFilter.value = opt.value;
+                }
+            });
         }
         // Luôn chạy applyFilter dù có param hay không
         applyFilter();

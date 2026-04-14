@@ -168,15 +168,15 @@
     
     <h2 class="section-title">Danh Mục Nổi Bật</h2>
     <div class="category-grid">
-        <div class="category-card" onclick="window.location.href='products'">
+        <div class="category-card" onclick="window.location.href='<%= request.getContextPath() %>/products?category=%C3%81o%20Nam'">
             <img src="https://images.unsplash.com/photo-1516257984-b1b4d707412e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Áo Nam" class="category-img">
             <div class="category-name">Áo Nam</div>
         </div>
-        <div class="category-card" onclick="window.location.href='products'">
+        <div class="category-card" onclick="window.location.href='<%= request.getContextPath() %>/products?category=Qu%E1%BA%A7n%20Nam'">
             <img src="https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcTxEWNKYjUbMqhb_CiVqpcX8kyFeug-lzsS6n9uIoDNeWZfFBjJjJPNdnulLCBASF3BqsxtCXQ9y9spRY5iq_dYHWJmrS9PY9mrMYS7dqCsjzLMIwxNM7gvcw" alt="Quần Nam" class="category-img">
             <div class="category-name">Quần Nam</div>
         </div>
-        <div class="category-card" onclick="window.location.href='products'">
+        <div class="category-card" onclick="window.location.href='<%= request.getContextPath() %>/products?category=Ph%E1%BB%A5%20Ki%E1%BB%87n'">
             <img src="https://images.unsplash.com/photo-1523206489230-c012c64b2b48?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Phụ Kiện" class="category-img">
             <div class="category-name">Phụ Kiện</div>
         </div>

@@ -8,13 +8,12 @@
     String[] selectedIds = request.getParameterValues("selectedIds");
     String error = request.getParameter("error");
 
-    String fullName = request.getParameter("fullName") != null ? request.getParameter("fullName") : "";
     String phone = request.getParameter("phone") != null ? request.getParameter("phone") : "";
     String city = request.getParameter("city") != null ? request.getParameter("city") : "";
     String district = request.getParameter("district") != null ? request.getParameter("district") : "";
     String address = request.getParameter("address") != null ? request.getParameter("address") : "";
-    String shippingMethod = request.getParameter("shippingMethod") != null ? request.getParameter("shippingMethod") : "standard";
-    String paymentMethod = request.getParameter("paymentMethod") != null ? request.getParameter("paymentMethod") : "cod";
+    String shippingMethod = "standard";
+    String paymentMethod = "cod";
 
     if (cart == null || cart.isEmpty()) {
         response.sendRedirect(request.getContextPath() + "/cart");
@@ -198,7 +197,7 @@
         <h2>Thanh toán</h2>
 
         <% if ("missing_info".equals(error)) { %>
-            <div class="error-box">Vui lòng nhập đầy đủ họ tên, số điện thoại và địa chỉ.</div>
+            <div class="error-box">Vui lòng nhập đầy đủ số điện thoại và địa chỉ.</div>
         <% } else if ("order_failed".equals(error)) { %>
             <div class="error-box">Đặt hàng thất bại. Vui lòng thử lại.</div>
         <% } %>
@@ -208,14 +207,10 @@
                 <input type="hidden" name="selectedIds" value="<%=item.getVariantId()%>">
             <% } %>
             <input type="hidden" name="discountAmount" value="<%=discount%>">
+            <input type="hidden" name="shippingMethod" value="standard">
+            <input type="hidden" name="paymentMethod" value="cod">
 
             <h3>Thông tin người nhận</h3>
-
-            <div class="form-group">
-                <label>Họ và tên</label>
-                <input type="text" name="fullName" placeholder="Nhập họ tên người nhận"
-       value="<%=fullName%>" required minlength="2" maxlength="100">
-            </div>
 
             <div class="form-group">
                 <label>Số điện thoại</label>
@@ -242,37 +237,8 @@
        value="<%=address%>" required minlength="5" maxlength="255">
             </div>
 
-            <h3>Phương thức giao hàng</h3>
-            <div class="radio-group">
-                <label>
-                    <input type="radio" name="shippingMethod" value="standard"
-                        <%= "standard".equalsIgnoreCase(shippingMethod) ? "checked" : "" %>>
-                    Giao hàng tiêu chuẩn
-                </label>
-            </div>
-            <div class="radio-group">
-                <label>
-                    <input type="radio" name="shippingMethod" value="express"
-                        <%= "express".equalsIgnoreCase(shippingMethod) ? "checked" : "" %>>
-                    Giao hàng nhanh
-                </label>
-            </div>
-
             <h3>Phương thức thanh toán</h3>
-            <div class="radio-group">
-                <label>
-                    <input type="radio" name="paymentMethod" value="cod"
-                        <%= "cod".equalsIgnoreCase(paymentMethod) ? "checked" : "" %>>
-                    Thanh toán khi nhận hàng (COD)
-                </label>
-            </div>
-            <div class="radio-group">
-                <label>
-                    <input type="radio" name="paymentMethod" value="banking"
-                        <%= "banking".equalsIgnoreCase(paymentMethod) ? "checked" : "" %>>
-                    Chuyển khoản ngân hàng
-                </label>
-            </div>
+            <div class="radio-group">Thanh toán khi nhận hàng (COD)</div>
 
             <button type="submit" class="btn-order">Đặt hàng</button>
         </form>
@@ -324,35 +290,6 @@
         </div>
     </div>
 </div>
-
-<script>
-    const subtotal = <%= subtotal %>;
-    const discount = <%= discount %>;
-
-    function formatCurrency(value) {
-        return Math.round(value).toLocaleString('vi-VN') + ' đ';
-    }
-
-    function updateSummaryByShipping() {
-        const selectedShipping = document.querySelector('input[name="shippingMethod"]:checked');
-        let shippingFee = 30000;
-
-        if (selectedShipping && selectedShipping.value === 'express') {
-            shippingFee = 50000;
-        }
-
-        const total = subtotal + shippingFee - discount;
-
-        document.getElementById('shippingFeeText').textContent = formatCurrency(shippingFee);
-        document.getElementById('totalText').textContent = formatCurrency(total);
-    }
-
-    document.querySelectorAll('input[name="shippingMethod"]').forEach(function(radio) {
-        radio.addEventListener('change', updateSummaryByShipping);
-    });
-
-    updateSummaryByShipping();
-</script>
 
 </body>
 </html>
