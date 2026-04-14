@@ -100,7 +100,7 @@
     <div class="sidebar">
         <a href="<%= request.getContextPath() %>/index.jsp">🏠 Trang người dùng</a>
 
-        <a href="<%= request.getContextPath() %>/manage-products.jsp">📦 Quản lý sản phẩm</a>
+        <a href="<%= request.getContextPath() %>/manage-products">📦 Quản lý sản phẩm</a>
 
         <a href="<%= request.getContextPath() %>/manage.jsp">
             🧾 Quản lý đơn hàng

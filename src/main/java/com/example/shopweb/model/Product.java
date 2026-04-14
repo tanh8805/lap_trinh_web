@@ -12,7 +12,8 @@ public class Product {
     private int categoryId;
     private double displayPrice; // Giá hiển thị (thấp nhất từ các variant)
     private String categoryName; // Tên danh mục để hiển thị và lọc client-side
-    private List<String> sizes;  // Danh sách size còn hàng để lọc client-side
+    private List<String> sizes; // Danh sách size còn hàng để lọc client-side
+    private List<String[]> variants; // Danh sách variant cho màn admin (id, size, price, stock)
     private Map<String, Double> variantPrices;
 
     public Product() {
@@ -80,6 +81,14 @@ public class Product {
 
     public void setSizes(List<String> sizes) {
         this.sizes = sizes;
+    }
+
+    public List<String[]> getVariants() {
+        return variants;
+    }
+
+    public void setVariants(List<String[]> variants) {
+        this.variants = variants;
     }
 
     public Map<String, Double> getVariantPrices() {
