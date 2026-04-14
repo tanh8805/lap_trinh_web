@@ -17,13 +17,10 @@ public class OrderDAO {
         String insertOrder = "INSERT INTO orders (user_id, total_amount, shipping_fee, status, address, phone) " +
                 "VALUES (?, ?, ?, ?, ?, ?)";
 
-        // Thu dung variant_id truoc (schema moi).
-        // Neu DB chua co cot variant_id, fallback sang product_id (schema cu).
+        // Try variant_id first (new schema), fallback to product_id (legacy schema).
         String insertItemNew = "INSERT INTO order_items (order_id, variant_id, quantity, price) " +
                 "VALUES (?, ?, ?, ?)";
-                "VALUES (?, ?, ?, ?)";
         String insertItemOld = "INSERT INTO order_items (order_id, product_id, quantity, price) " +
-                "VALUES (?, ?, ?, ?)";
                 "VALUES (?, ?, ?, ?)";
 
         Connection conn = null;
@@ -31,7 +28,7 @@ public class OrderDAO {
             conn = DBConnection.getConnection();
             conn.setAutoCommit(false);
 
-            // Buoc 1: tao don hang, lay orderId
+            // Step 1: create order and read generated orderId.
             int orderId;
             try (PreparedStatement psOrder = conn.prepareStatement(
                     insertOrder, Statement.RETURN_GENERATED_KEYS)) {
@@ -47,21 +44,15 @@ public class OrderDAO {
                         conn.rollback();
                         return false;
                     }
-                    if (!keys.next()) {
-                        conn.rollback();
-                        return false;
-                    }
                     orderId = keys.getInt(1);
                 }
             }
 
-            // Buoc 2: thu insert voi variant_id truoc
+            // Step 2: insert order items with fallback strategy.
             try {
                 insertItems(conn, insertItemNew, orderId, items, true);
             } catch (SQLException e) {
-                // Neu loi (co the do chua co cot variant_id), thu fallback product_id
                 if (e.getMessage() != null &&
-                        (e.getMessage().contains("variant_id") || e.getMessage().contains("Unknown column"))) {
                         (e.getMessage().contains("variant_id") || e.getMessage().contains("Unknown column"))) {
                     insertItems(conn, insertItemOld, orderId, items, false);
                 } else {
@@ -80,21 +71,10 @@ public class OrderDAO {
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
-                try {
-                    conn.rollback();
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
             }
             return false;
         } finally {
             if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
                 try {
                     conn.setAutoCommit(true);
                     conn.close();
@@ -107,14 +87,12 @@ public class OrderDAO {
 
     private void insertItems(Connection conn, String sql, int orderId,
             List<CartItem> items, boolean useVariantId)
-            List<CartItem> items, boolean useVariantId)
             throws SQLException {
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             for (CartItem item : items) {
                 ps.setInt(1, orderId);
-                // useVariantId=true -> dung variantId (schema moi)
-                // useVariantId=true -> dung variantId (schema moi)
-                // useVariantId=false -> fallback productId (schema cu)
+                // useVariantId=true -> variantId (new schema)
+                // useVariantId=false -> productId (legacy schema)
                 ps.setInt(2, useVariantId ? item.getVariantId() : item.getProductId());
                 ps.setInt(3, item.getQuantity());
                 ps.setDouble(4, item.getPrice());

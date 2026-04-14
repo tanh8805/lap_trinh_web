@@ -4,9 +4,11 @@ D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\JakartaRestConfiguration.ja
 D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\dao\UserDAO.java
 D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\controller\AdminOrderServlet.java
 D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\model\Product.java
+D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\model\CustomerOrderItem.java
 D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\dao\AdminProductDAO.java
 D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\model\Contact.java
 D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\controller\ProductServlet.java
+D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\controller\CustomerOrderServlet.java
 D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\model\AdminOrder.java
 D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\controller\RegisterServlet.java
 D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\controller\ManageProductServlet.java
@@ -20,6 +22,7 @@ D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\dao\AdminOrderDAO.java
 D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\resources\JakartaEE8Resource.java
 D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\controller\CartServlet.java
 D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\dao\CartDAO.java
+D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\dao\CustomerOrderDAO.java
 D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\dao\ProductDAO.java
 D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\controller\ContactServlet.java
 D:\NetBean\ShopWeb\src\main\java\com\example\shopweb\utils\DBConnection.java

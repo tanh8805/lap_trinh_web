@@ -208,6 +208,7 @@
     <a href="index.jsp" class="logo">ShopWeb</a>
     <div class="menu">
         <a href="products">Sản phẩm</a>
+        <a href="<%= request.getContextPath() %>/orders">Đơn hàng</a>
         <% if (session.getAttribute("loggedInUser") != null) { %>
             <a href="<%= request.getContextPath() %>/logout">Đăng xuất</a>
         <% } else { %>

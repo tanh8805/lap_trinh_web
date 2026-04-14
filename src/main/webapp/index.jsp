@@ -142,6 +142,7 @@
     <div class="menu">
         <a href="products">Sản phẩm</a>
         <a href="contact.jsp">Liên Hệ</a>
+        <a href="<%= request.getContextPath() %>/orders">Đơn hàng</a>
         <%-- Logic kiểm tra Session đăng nhập --%>
         <% if (session.getAttribute("loggedInUser") != null) { %>
             <a href="<%= request.getContextPath() %>/logout">Đăng xuất</a>
