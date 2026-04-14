@@ -120,7 +120,25 @@
         .sidebar a { display: block; padding: 12px 20px; color: #fff; text-decoration: none; }
         .sidebar a:hover, .sidebar a.active { background-color: #34495e; }
         .main { flex: 1; background: #ecf0f1; }
-        .header { min-height: 60px; background: #fff; border-bottom: 1px solid #ddd; padding: 0 20px; display: flex; align-items: center; }
+        .header {
+            min-height: 60px;
+            background: #fff;
+            border-bottom: 1px solid #ddd;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logout-btn {
+            background-color: #e74c3c;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            cursor: pointer;
+        }
+        .logout-btn:hover {
+            background-color: #c0392b;
+        }
         .content { padding: 20px; }
         .card { background: #fff; border-radius: 6px; padding: 18px; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
 
@@ -157,14 +175,17 @@
 <body>
 <div class="container">
     <div class="sidebar">
-        <a href="<%= request.getContextPath() %>/index.jsp">Trang người dùng</a>
-        <a href="<%= request.getContextPath() %>/manage-products.jsp">Quản lý sản phẩm</a>
-        <a href="<%= request.getContextPath() %>/manage.jsp" class="active">Quản lý đơn hàng</a>
+        <a href="<%= request.getContextPath() %>/index.jsp">🏠 Trang người dùng</a>
+        <a href="<%= request.getContextPath() %>/manage-products">📦 Quản lý sản phẩm</a>
+        <a href="<%= request.getContextPath() %>/manage.jsp" class="active">🧾 Quản lý đơn hàng</a>
     </div>
 
     <div class="main">
         <div class="header">
             <h3>Quản lý đơn hàng</h3>
+            <form action="<%= request.getContextPath() %>/logout" method="get">
+                <button class="logout-btn">Logout</button>
+            </form>
         </div>
 
         <div class="content">

@@ -19,7 +19,8 @@
     <title>Quản lý sản phẩm</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: Arial, sans-serif; background: #ecf0f1; display: flex; min-height: 100vh; }
+        body { font-family: Arial, sans-serif; background: #ecf0f1; margin: 0; }
+        .container { display: flex; min-height: 100vh; }
 
         /* ===== SIDEBAR — giữ nguyên style của admin-dashboard.jsp ===== */
         .sidebar { width: 250px; background: #2c3e50; color: #fff; padding-top: 20px; flex-shrink: 0; }
@@ -179,15 +180,12 @@
 </head>
 <body>
 
+<div class="container">
 <%-- ===== SIDEBAR — đồng bộ với admin-dashboard.jsp ===== --%>
 <div class="sidebar">
     <a href="<%= request.getContextPath() %>/index.jsp">🏠 Trang người dùng</a>
     <a href="<%= request.getContextPath() %>/manage-products" class="active">📦 Quản lý sản phẩm</a>
-    <a href="javascript:void(0)" onclick="toggleDropdown()">🧾 Quản lý đơn hàng ▼</a>
-    <div id="orderDropdown" class="dropdown" style="display:none; padding-left:10px;">
-        <a href="<%= request.getContextPath() %>/admin/orders">Tất cả đơn</a>
-    </div>
-    <a href="<%= request.getContextPath() %>/admin">⬅ Dashboard</a>
+    <a href="<%= request.getContextPath() %>/manage.jsp">🧾 Quản lý đơn hàng</a>
 </div>
 
 <div class="main">
@@ -340,7 +338,8 @@
                                class="btn-edit">✏ Sửa</a>
                             &nbsp;
                             <button class="btn-delete"
-                                    onclick="confirmDelete(<%= p.getId() %>, '<%= p.getName().replace("'", "\\'") %>')">
+                                    data-name="<%= p.getName() != null ? p.getName().replace("\"", "&quot;") : "" %>"
+                                    onclick="confirmDelete(<%= p.getId() %>, this.getAttribute('data-name'))">
                                 🗑 Xóa
                             </button>
                         </td>
@@ -385,11 +384,6 @@
         }
     }
 
-    // Toggle dropdown đơn hàng ở sidebar
-    function toggleDropdown() {
-        var d = document.getElementById('orderDropdown');
-        d.style.display = d.style.display === 'block' ? 'none' : 'block';
-    }
     function addRow() {
         let div = document.createElement("div");
         div.className = "variant-row";
@@ -407,6 +401,5 @@ function removeRow(btn) {
     btn.parentElement.remove();
 }
 </script>
-
 </body>
 </html>
