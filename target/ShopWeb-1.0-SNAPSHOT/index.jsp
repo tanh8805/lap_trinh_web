@@ -152,7 +152,7 @@
         <% } %>
 
         <%-- Icon giỏ hàng — badge số lượng được cập nhật từ localStorage --%>
-        <a href="cart.jsp" class="cart-link" title="Giỏ hàng">
+        <a href="<%= request.getContextPath() %>/cart" class="cart-link" title="Giỏ hàng">
             🛒
             <span class="cart-badge" id="cartBadge">0</span>
         </a>
